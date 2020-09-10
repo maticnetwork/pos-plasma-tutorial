@@ -1,237 +1,17 @@
-// import React ,{ useEffect, useState } from 'react';
-// import './App.css';
-// import { getWeb3 } from './utils.js';
-// import Navbar from "./Navbar";
-// import WalletConnectProvider from "@maticnetwork/walletconnect-provider";
-// const MaticPOSClient = require("@maticnetwork/maticjs").MaticPOSClient;
-
-// function App() {
-
-// 	let content;
-// 	const [web3, setWeb3] = useState(undefined);
-// 	const [loading, setLoading] = useState(true);
-// 	const [loading2, setLoading2] = useState(false);
-// 	const [NetworkID, setNetworkID] = useState(0);
-// 	const [account, setAccount] = useState("");
-// 	const [ERC20, setERC20] = useState({});
-// 	const [Maticweb3,setMaticweb3] = useState();
-// 	const [Goerliweb3, setGoerliweb3] = useState();
-// 	const [MyContractAddress,setMyContractAddress] = useState("");
-// 	const [inputValue, setinputValue] = useState("");
-// 	const [maticSdk, setMaticSdk] = useState();
-// 	const [maticProvider, setmaticProvider] = useState();
-// 	const [goerliProvider, setgoerliProvider] = useState();
-// 	const [erc20balance, seterc20balance] = useState("");
-// 	const goerilDerc20address = "0x655F2166b0709cd575202630952D71E2bB0d61Af"; // Derc 20 token addres deployed on  goeril
-// 	const maticDerc20address = "0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1"; // Derc20 token address deployed on matic
-
-// 	useEffect(() => {
-// 		const init = async () => {
-// 				const web3 = await getWeb3();
-// 				setWeb3(web3);
-// 		}
-// 		init();
-// }, []);
-
-// const loadBlockchainData = async () => {
-// 	setLoading(true);
-// 	const maticProvider = new WalletConnectProvider({
-// 		host: `https://rpc-mumbai.matic.today`,
-// 		callbacks: {
-// 			onConnect: console.log("matic connected"),
-// 			onDisconnect: console.log("matic disconnected!"),
-// 		},
-// 	});
-
-// 	const goerillProvider = new WalletConnectProvider({
-// 		host: `https://goerli.infura.io/v3/05cee1c13b0e455e929f6e5ef4c7b92a`,
-// 		callbacks: {
-// 			onConnect: console.log("goeril connected"),
-// 			onDisconnect: console.log("goeril disconnected"),
-// 		},
-// 	});
-
-// 	setmaticProvider(maticProvider);
-// 	setgoerliProvider(goerillProvider);
-
-// 	const maticWeb3 = web3(maticProvider);
-// 	setMaticweb3(maticWeb3);
-// 	const goerilWeb3 = web3(goerillProvider);
-// 	setGoerliweb3(goerilWeb3);
-// 	const web3 = window.web3;
-
-// 	const accounts = await web3.eth.getAccounts();
-
-// 	setAccount(accounts[0]);
-// 	const networkId = await web3.eth.net.getId();
-
-	
-
-// 	setNetworkID(networkId);
-
-// 	if (networkId == 5) {
-// 		// const erc20 = new web3.eth.Contract(ERC20abi.abi, goerilDerc20address);
-// 		// const name = await erc20.methods.balanceOf(accounts[0]).call();
-// 		// const balance = name / 1000000000000000000; // 18 decimals
-// 		// console.log(balance);
-// 		// seterc20balance(balance);
-
-// 		// setERC20(erc20);
-// 		setLoading(false);
-// 	} else if (networkId == 80001) {
-// 		// const erc20 = new web3.eth.Contract(ERC20abi.abi, maticDerc20address);
-// 		// const name = await erc20.methods.balanceOf(accounts[0]).call();
-// 		// const balance = name / 1000000000000000000; // 18 decimals
-// 		// console.log(balance);
-// 		// seterc20balance(balance);
-// 		setLoading(false);
-// 	} else {
-// 		window.alert(" contract not deployed to detected network.");
-// 		setLoading2(true);
-// 	}
-// };
-
-// const posclient = () => {
-// 	const maticPOSClient = new MaticPOSClient({
-// 		network: "testnet",
-// 		version: "mumbai",
-// 		maticProvider: window.web3,
-// 		parentProvider: window.web3,
-// 		POSRootChainManager: "0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74",
-// 		posERC20Predicate: "0xdD6596F2029e6233DEFfaCa316e6A95217d4Dc34",
-// 		posERC721Predicate: "0x74D83801586E9D3C4dc45FfCD30B54eA9C88cf9b",
-// 		posERC1155Predicate: "0xB19a86ba1b50f0A395BfdC3557608789ee184dC8",
-// 		posEtherPredicate: "0xe2B01f3978c03D6DdA5aE36b2f3Ac0d66C54a6D5",
-// 		parentDefaultOptions: { from: account },
-// 		maticDefaultOptions: { from: account },
-// 	});
-// 	return maticPOSClient;
-// };
-// const Approve = async () => {
-// 	const maticPOSClient = posclient();
-// 	const x = inputValue * 1000000000000000000; // 18 decimals
-// 	const x1 = x.toString();
-// 	await maticPOSClient.approveERC20ForDeposit(goerilDerc20address, x1, {
-// 		from: account,
-// 	});
-// };
-
-// const Deposit = async () => {
-// 	const maticPOSClient = posclient();
-
-// 	const x = inputValue * 1000000000000000000; // 18 decimals
-// 	const x1 = x.toString();
-
-// 	await maticPOSClient.depositERC20ForUser(goerilDerc20address, account, x1, {
-// 		from: account,
-// 	});
-// };
-
-// const burn = async () => {
-// 	const maticPOSClient = posclient();
-// 	const x = inputValue * 1000000000000000000;
-// 	const x1 = x.toString();
-// 	await maticPOSClient.burnERC20(maticDerc20address, x1, {
-// 		from: account,
-// 	});
-// };
-
-// const exit = async () => {
-// 	const maticPOSClient = posclient();
-// 	await maticPOSClient.exitERC20(inputValue, {
-// 		from: account,
-// 	});
-// };
-// const onchange = (e) => {
-// 	setinputValue(e.target.value);
-// };
-
-// if (loading === false) {
-// 	content = (
-// 		<p className="text-center">
-// 			Loading...{loading2 ? <div>load on mainenet </div> : ""}
-// 		</p>
-// 	);
-// } else {
-// 	content = (
-// 		<div class="container">
-// 			<h1>
-// 				your ERC20 balance : <b>{erc20balance} </b>
-// 			</h1>
-// 			<button
-// 				class="btn-primary"
-// 				onClick={Approve}
-// 				disabled={NetworkID != 0 && NetworkID == 80001 ? true : false}
-// 			>
-// 				Approve
-// 			</button>
-
-// 			<button
-// 				class="btn-primary"
-// 				onClick={Deposit}
-// 				disabled={NetworkID != 0 && NetworkID == 80001 ? true : false}
-// 			>
-// 				Deposit
-// 			</button>
-
-// 			<button
-// 				class="btn-primary"
-// 				onClick={burn}
-// 				disabled={NetworkID != 0 && NetworkID == 5 ? true : false}
-// 			>
-// 				burn
-// 			</button>
-
-// 			<button
-// 				class="btn-primary"
-// 				onClick={exit}
-// 				disabled={NetworkID != 0 && NetworkID == 5 ? true : false}
-// 			>
-// 				exit
-// 			</button>
-
-// 			<br />
-// 			<p></p>
-// 			<input
-// 				id="inputvalue"
-// 				type="text"
-// 				className="form-control"
-// 				placeholder="value"
-// 				name="inputvalue"
-// 				value={inputValue}
-// 				onChange={onchange}
-// 				required
-// 			/>
-// 		</div>
-// 	);
-// }
-// 	return (
-// 		<div className="App">
-// 			<Navbar account = {account} />
-// 			{content}
-// 		</div>
-// 	);
-// }
-
-// export default App;
-
 import React, { useEffect, useState } from "react";
 import ERC20abi from "./contracts/Token.json";
 import Web3 from "web3";
 import Navbar from "./Navbar";
-// import TestImport from "./testimport.js";
 import WalletConnectProvider from "@maticnetwork/walletconnect-provider";
 const MaticPOSClient = require("@maticnetwork/maticjs").MaticPOSClient;
 const Network = require("@maticnetwork/meta/network");
 const Matic = require("@maticnetwork/maticjs");
+
 console.log("MATIC",Matic);
-// const maticUtils = require('./maticUtils');
 const App = () => {
   useEffect(() => {
     loadWeb3();
     loadBlockchainData();
-    // TestImport.x(89);
-    //esl
   }, []);
   let content;
   const [loading2, setloading2] = useState(false);
@@ -320,7 +100,7 @@ const App = () => {
       setloading2(true);
     }
   };
-
+  // posclientGeneral facilitates the operations like approve, deposit, exit  
   const posclientGeneral = () => {
     const maticPOSClient = new MaticPOSClient({
       network: "testnet",
@@ -337,7 +117,7 @@ const App = () => {
     });
     return maticPOSClient;
   };
-
+  // posclientBurn facilitates the burning of tokens on the matic chain
   const posclientBurn = () => {
     const maticPOSClient = new MaticPOSClient({
       network: "testnet",
@@ -354,10 +134,9 @@ const App = () => {
     });
     return maticPOSClient;
   };
-
+// getMaticPlasmaClient facilitates the burning of tokens on the matic chain
   const getMaticPlasmaClient = async (_network = "testnet", _version = "mumbai") => {
     const network = new Network(_network, _version);
-    // const { from } = getAccount();
     const matic = new Matic({
     network: _network,
     version: _version,
@@ -368,14 +147,36 @@ const App = () => {
 
 
     });
-    console.log("matic1",matic);
     await matic.initialize();
-    // await matic.depositEther("1.9",{
-    //   from: account
-    // })
     return { matic, network };
   };
 
+    // getMaticPlasmaClientBurn facilitates the operations like approve, deposit,confirmWithdraw ,exit 
+  const getMaticPlasmaClientBurn = async (_network = "testnet", _version = "mumbai") => {
+    const network = new Network(_network, _version);
+    const matic = new Matic({
+    network: _network,
+    version: _version,
+    parentProvider: goerliprovider,
+    maticProvider: window.web3,
+    parentDefaultOptions: { from:account },
+    maticDefaultOptions: { from:account },
+
+
+    });
+    await matic.initialize();
+    return { matic, network };
+  };
+
+  const maticPlasma = new Matic({
+    maticProvider: maticprovider,
+    parentProvider: window.web3,
+    rootChain: "0x2890bA17EfE978480615e330ecB65333b880928e",
+    withdrawManager: "0x2923C8dD6Cdf6b2507ef91de74F1d5E0F11Eac53",
+    depositManager: "0x7850ec290A2e2F40B82Ed962eaf30591bb5f5C96",
+    registry: "0xeE11713Fe713b2BfF2942452517483654078154D",
+})
+  // POS ether functionality
   const Approve = async () => {
 		const maticPOSClient = posclientGeneral();
 		const goerliDerc20address = "0x655F2166b0709cd575202630952D71E2bB0d61Af"; // Derc 20 token addres deployed on  goeril
@@ -424,11 +225,10 @@ const App = () => {
     })
   };
 
+  // POS ERC20 functionality
   const ApproveERC20 = async () => {
 		const maticPOSClient = posclientGeneral();
 		const goerliDerc20address = "0x655F2166b0709cd575202630952D71E2bB0d61Af"; // Derc 20 token addres deployed on  goeril
-    const maticDerc20address = "0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1"; // Derc20 token address deployed on matic
-
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await maticPOSClient.approveERC20ForDeposit(goerliDerc20address, x1, {
@@ -439,10 +239,8 @@ const App = () => {
   const DepositERC20 = async () => {
     const maticPOSClient = posclientGeneral();
 		let g = "0x655F2166b0709cd575202630952D71E2bB0d61Af"; // Derc 20 token addres deployed on  goeril
-    let m = "0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1"; // Derc20 token address deployed on matic
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
-
     await maticPOSClient.depositERC20ForUser(g,account, x1, {
       from: account,
     });
@@ -452,13 +250,10 @@ const App = () => {
     const maticPOSClient = posclientBurn();
     const x = inputvalue * 1000000000000000000;
 		const x1 = x.toString();
-		let g = "0x655F2166b0709cd575202630952D71E2bB0d61Af"; // Derc 20 token addres deployed on  goeril
     let m = "0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1"; // Derc20 token address deployed on matic
-    const maticWETH="0x714550C2C1Ea08688607D86ed8EeF4f5E4F22323";
     await maticPOSClient.burnERC20(m, x1, {
       from: account,
     }).then((res) => {
-			console.log(res.transactionHash);
 			setburnHash(res.transactionHash);
 		})
   };
@@ -467,6 +262,7 @@ const App = () => {
     const maticPOSClient = posclientGeneral();
     await maticPOSClient.exitERC20(inputvalue, {
       from: account,
+      gas: "7000000"
     }).then((res) => {
       console.log("exit o/p",res);
     })
@@ -475,12 +271,12 @@ const App = () => {
     setinputvalue(e.target.value);
   };
 
+
+  // Plasma ether functionality
   const depositEtherPlasma = async () => {
-    // const { maticPlasma,network } = await maticUtils.getMaticClient();
     const { matic,network } = await getMaticPlasmaClient();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
-    console.log("maticPlasma",matic);
     await matic.depositEther(x1,{
       from: account
     }).catch(err => {
@@ -488,7 +284,82 @@ const App = () => {
 
     })
   }
+  
+  const ApproveEtherPlasma = async () => {
+    console.log("approve")
+  }
 
+  const burnEtherPlasma = async () => {
+    const { matic,network } = await getMaticPlasmaClientBurn();
+    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x1 = x.toString();
+    const childMTXaddress = "0x4DfAe612aaCB5b448C12A591cD0879bFa2e51d62";
+    await matic.startWithdraw(childMTXaddress, x1, {
+      from:account
+    }).then((res) => {
+      console.log("burn ether plasma txn hash",res.transactionHash);
+    })
+  }
+
+  const confirmWithdrawEtherPlasma = async () => {
+    const { matic,network } = await getMaticPlasmaClient();
+    await matic.withdraw(inputvalue, { from:account, gas: "7000000" }).then((res) => {
+      console.log("Confirm withdraw hash: ", res.transactionHash);
+    });
+  }
+
+  const exitEtherPlasma = async () => {
+    const { matic,network } = await getMaticPlasmaClient();
+    const childMTXaddress = "0x60D4dB9b534EF9260a88b0BED6c486fe13E604Fc";
+    await matic.processExits(childMTXaddress, {from:account, gasPrice:"7000000"}).then((res)=> {
+      console.log("process exit",res.transactionHash);
+    })
+  }
+
+  // Plasma ERC20 functionality 
+  const depositERC20Plasma = async () => {
+    const { matic,network } = await getMaticPlasmaClient();
+    const token = "0x3f152B63Ec5CA5831061B2DccFb29a874C317502";
+    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x1 = x.toString();
+    await matic.approveERC20TokensForDeposit(token, x1, {
+      from:account,
+      gasPrice: "10000000000",
+    });
+    return matic.depositERC20ForUser(token, account, x1, {
+      from:account,
+      gasPrice: "10000000000",
+    });
+  }
+  const burnERC20Plasma = async () => {
+    const { matic,network } = await getMaticPlasmaClientBurn();
+    const token = "0x3f152B63Ec5CA5831061B2DccFb29a874C317502";
+    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x1 = x.toString();
+    maticPlasma.startWithdraw(token, x1, {
+            from:account,
+        }).then((res) => {
+            console.log(res.transactionHash) // eslint-disable-line
+        })
+  }
+
+  const confirmWithdrawERC20Plasma = async () => {
+    const { matic,network } = await getMaticPlasmaClient();
+    maticPlasma.withdraw(inputvalue, {
+      from:account,
+    })
+    .then((res) => {
+      console.log(res.transactionHash); // eslint-disable-line
+    })
+  }
+
+  const exitERC20Plasma = async () => {
+    const { matic,network } = await getMaticPlasmaClient();
+    const token = "0x2d7882beDcbfDDce29Ba99965dd3cdF7fcB10A1e";
+    await matic.processExits(token, { from:account, gas: "7000000" }).then((res) => {
+      console.log("Exit hash: ", res.transactionHash);
+    });
+  }
   if (loading === true) {
     content = (
       <p className="text-center">
@@ -571,7 +442,7 @@ const App = () => {
 
         <button
           onClick={exitERC20}
-          disabled={Networkid !== 0 && Networkid === 5 ? true : false}
+          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
         >
           exit
         </button>
@@ -589,12 +460,12 @@ const App = () => {
         />
 				<p id="burnHash">{burnHash}</p>
 
-        <h1>**PLASMA**</h1>
+        <h1>**PLASMA ETHER**</h1>
         <h1>
           your ERC20 balance : <b>{erc20balance} </b>
         </h1>
         <button
-          onClick={Approve}
+          onClick={ApproveEtherPlasma}
           disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
         >
           Approve
@@ -608,14 +479,70 @@ const App = () => {
         </button>
 
         <button
-          onClick={burnEther}
+          onClick={burnEtherPlasma}
           disabled={Networkid !== 0 && Networkid === 5 ? true : false}
         >
           burn
         </button>
+        <button
+          onClick={confirmWithdrawERC20Plasma}
+          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+        >
+          Confirm Withdraw
+        </button>
 
         <button
-          onClick={exitEther}
+          onClick={exitERC20Plasma}
+          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+        >
+          exit
+        </button>
+
+        <br />
+        <p></p>
+        <input
+          id="inputvalue"
+          type="text"
+          placeholder="value"
+          name="inputvalue"
+          value={inputvalue}
+          onChange={onchange}
+          required
+        />
+				<p id="burnHash">{burnHash}</p>
+        <h1>**PLASMA ERC20**</h1>
+        <h1>
+          your ERC20 balance : <b>{erc20balance} </b>
+        </h1>
+        <button
+          onClick={ApproveEtherPlasma}
+          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
+        >
+          Approve
+        </button>
+
+        <button
+          onClick={depositERC20Plasma}
+          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
+        >
+          Deposit
+        </button>
+
+        <button
+          onClick={burnERC20Plasma}
+          disabled={Networkid !== 0 && Networkid === 5 ? true : false}
+        >
+          burn
+        </button>
+        <button
+          onClick={confirmWithdrawEtherPlasma}
+          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+        >
+          Confirm Withdraw
+        </button>
+
+        <button
+          onClick={exitEtherPlasma}
           disabled={Networkid !== 0 && Networkid === 5 ? false : true}
         >
           exit
