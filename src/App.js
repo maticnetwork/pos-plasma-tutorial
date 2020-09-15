@@ -3,7 +3,7 @@ import Web3 from "web3";
 import Navbar from "./Navbar";
 import WalletConnectProvider from "@maticnetwork/walletconnect-provider";
 const config = require('./config')
-const MaticPOSClient = require("@maticnetwork/maticjs").MaticPOSClient;
+const MaticPoSClient = require("@maticnetwork/maticjs").MaticPOSClient;
 const Network = require("@maticnetwork/meta/network");
 const Matic = require("@maticnetwork/maticjs");
 
@@ -101,8 +101,8 @@ const App = () => {
     }
   };
   // posclientGeneral facilitates the operations like approve, deposit, exit  
-  const posclientGeneral = () => {
-    const maticPOSClient = new MaticPOSClient({
+  const PoSclientGeneral = () => {
+    const maticPoSClient = new MaticPoSClient({
       network: "testnet",
       version: "mumbai",
       maticProvider: maticprovider,
@@ -115,11 +115,11 @@ const App = () => {
       parentDefaultOptions: { from: account },
       maticDefaultOptions: { from: account },
     });
-    return maticPOSClient;
+    return maticPoSClient;
   };
   // posclientBurn facilitates the burning of tokens on the matic chain
-  const posclientBurn = () => {
-    const maticPOSClient = new MaticPOSClient({
+  const PoSclientBurn = () => {
+    const maticPoSClient = new MaticPoSClient({
       network: "testnet",
       version: "mumbai",
       maticProvider: window.web3,
@@ -132,7 +132,7 @@ const App = () => {
       parentDefaultOptions: { from: account },
       maticDefaultOptions: { from: account },
     });
-    return maticPOSClient;
+    return maticPoSClient;
   };
 // getMaticPlasmaClient facilitates the burning of tokens on the matic chain
   const getMaticPlasmaClient = async (_network = "testnet", _version = "mumbai") => {
@@ -186,20 +186,20 @@ const maticPlasmaBurn = new Matic({
   // POS ether functionality
 
   const DepositEther = async () => {
-    const maticPOSClient = posclientGeneral();
+    const maticPoSClient = PoSclientGeneral();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
 
-    await maticPOSClient.depositEtherForUser(account, x1, {
+    await maticPoSClient.depositEtherForUser(account, x1, {
       from: account,
     });
   };
 
   const burnEther = async () => {
-    const maticPOSClient = posclientBurn();
+    const maticPoSClient = PoSclientBurn();
     const x = inputvalue * 1000000000000000000;
 		const x1 = x.toString();
-    await maticPOSClient.burnERC20(config.maticWETH, x1, {
+    await maticPoSClient.burnERC20(config.maticWETH, x1, {
       from: account,
     }).then((res) => {
 			console.log(res.transactionHash);
@@ -208,8 +208,8 @@ const maticPlasmaBurn = new Matic({
   };
 
   const exitEther = async () => {
-    const maticPOSClient = posclientGeneral();
-    await maticPOSClient.exitERC20(inputvalue, {
+    const maticPoSClient = PoSclientGeneral();
+    await maticPoSClient.exitERC20(inputvalue, {
       from: account,
     }).then((res) => {
       console.log("exit o/p",res);
@@ -219,22 +219,22 @@ const maticPlasmaBurn = new Matic({
   // POS ERC20 functionality
 
   const DepositERC20 = async () => {
-    const maticPOSClient = posclientGeneral();
+    const maticPoSClient = PoSclientGeneral();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
-    await maticPOSClient.approveERC20ForDeposit(config.goerliDerc20address, x1, {
+    await maticPoSClient.approveERC20ForDeposit(config.goerliDERC20address, x1, {
       from: account,
     });
-    await maticPOSClient.depositERC20ForUser(config.goerliDerc20address,account, x1, {
+    await maticPoSClient.depositERC20ForUser(config.goerliDERC20address,account, x1, {
       from: account,
     });
   };
 
   const burnERC20 = async () => {
-    const maticPOSClient = posclientBurn();
+    const maticPoSClient = PoSclientBurn();
     const x = inputvalue * 1000000000000000000;
 		const x1 = x.toString();
-    await maticPOSClient.burnERC20(config.maticDerc20address, x1, {
+    await maticPoSClient.burnERC20(config.maticDERC20address, x1, {
       from: account,
     }).then((res) => {
 			setburnHash(res.transactionHash);
@@ -242,8 +242,8 @@ const maticPlasmaBurn = new Matic({
   };
 
   const exitERC20 = async () => {
-    const maticPOSClient = posclientGeneral();
-    await maticPOSClient.exitERC20(inputvalue, {
+    const maticPoSClient = PoSclientGeneral();
+    await maticPoSClient.exitERC20(inputvalue, {
       from: account,
       gas: "7000000"
     }).then((res) => {
@@ -343,7 +343,7 @@ const maticPlasmaBurn = new Matic({
     content = (
       <div>
         <div id="POS" hidden={selectedBridgeOption.label === "Proof of Stake" ? false : true}>
-          <h1>**POS**</h1>
+          <h1>PoS</h1>
           <div id="Ether" hidden={selectedToken.label === "Ether" && selectedBridgeOption.label === "Proof of Stake" ? false : true}>
           <h1>ETHER</h1>
 
@@ -418,7 +418,7 @@ const maticPlasmaBurn = new Matic({
         </div>
         
         <div id = "plasma" hidden={selectedBridgeOption.label === "Plasma" ? false : true}>
-        <h1>**PLASMA**</h1>
+        <h1>Plasma</h1>
           <div id="PlasmaEther" hidden={selectedToken.label === "Ether" ? false : true} >
           <h1>ETHER</h1>
 
