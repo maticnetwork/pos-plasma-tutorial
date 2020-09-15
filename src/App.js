@@ -13,14 +13,13 @@ const App = () => {
     loadBlockchainData();
   }, []);
   let content;
-  const [loading2, setloading2] = useState(false);
   const [Networkid, setNetworkid] = useState(0);
   const [account, setAccount] = useState("");
   const [loading, setLoading] = useState(true);
-  const [inputvalue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState("");
 	const [burnHash, setBurnHash] = useState("");
-  const [maticprovider, setMaticprovider] = useState();
-  const [goerliprovider, setGoerliprovider] = useState();
+  const [maticProvider, setMaticProvider] = useState();
+  const [goerliprovider, setGoerliProvider] = useState();
   const [bridgeOptions] =  useState([
     {
       label:"Proof of Stake",
@@ -80,8 +79,8 @@ const App = () => {
       },
     });
 
-    setMaticprovider(maticProvider);
-    setGoerliprovider(goerliProvider);
+    setMaticProvider(maticProvider);
+    setGoerliProvider(goerliProvider);
     const web3 = window.web3;
 
     const accounts = await web3.eth.getAccounts();
@@ -96,8 +95,7 @@ const App = () => {
 
       setLoading(false);
     } else {
-      window.alert(" contract not deployed to detected network.");
-      setloading2(true);
+      window.alert(" switch to  Matic or Ethereum network");
     }
   };
   // posClientGeneral facilitates the operations like approve, deposit, exit  
@@ -105,13 +103,8 @@ const App = () => {
     const maticPoSClient = new MaticPoSClient({
       network: "testnet",
       version: "mumbai",
-      maticProvider: maticprovider,
+      maticProvider: maticProvider,
       parentProvider: window.web3,
-      POSRootChainManager: "0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74",
-      posERC20Predicate: "0xdD6596F2029e6233DEFfaCa316e6A95217d4Dc34",
-      posERC721Predicate: "0x74D83801586E9D3C4dc45FfCD30B54eA9C88cf9b",
-      posERC1155Predicate: "0xB19a86ba1b50f0A395BfdC3557608789ee184dC8",
-      posEtherPredicate: "0xe2B01f3978c03D6DdA5aE36b2f3Ac0d66C54a6D5",
       parentDefaultOptions: { from: account },
       maticDefaultOptions: { from: account },
     });
@@ -123,12 +116,7 @@ const App = () => {
       network: "testnet",
       version: "mumbai",
       maticProvider: window.web3,
-      parentProvider: window.web3,
-      POSRootChainManager: "0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74",
-      posERC20Predicate: "0xdD6596F2029e6233DEFfaCa316e6A95217d4Dc34",
-      posERC721Predicate: "0x74D83801586E9D3C4dc45FfCD30B54eA9C88cf9b",
-      posERC1155Predicate: "0xB19a86ba1b50f0A395BfdC3557608789ee184dC8",
-      posEtherPredicate: "0xe2B01f3978c03D6DdA5aE36b2f3Ac0d66C54a6D5",
+      parentProvider: goerliprovider,
       parentDefaultOptions: { from: account },
       maticDefaultOptions: { from: account },
     });
@@ -141,7 +129,7 @@ const App = () => {
     network: _network,
     version: _version,
     parentProvider: window.web3,
-    maticProvider: maticprovider,
+    maticProvider: maticProvider,
     parentDefaultOptions: { from:account },
     maticDefaultOptions: { from:account },
 
@@ -168,7 +156,7 @@ const App = () => {
   };
 
   const maticPlasma = new Matic({
-    maticProvider: maticprovider,
+    maticProvider: maticProvider,
     parentProvider: window.web3,
     rootChain: "0x2890bA17EfE978480615e330ecB65333b880928e",
     withdrawManager: "0x2923C8dD6Cdf6b2507ef91de74F1d5E0F11Eac53",
@@ -187,7 +175,7 @@ const App = () => {
 
   const depositEther = async () => {
     const maticPoSClient = posClientGeneral();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
 
     await maticPoSClient.depositEtherForUser(account, x1, {
@@ -197,7 +185,7 @@ const App = () => {
 
   const burnEther = async () => {
     const maticPoSClient = posClientBurn();
-    const x = inputvalue * 1000000000000000000;
+    const x = inputValue * 1000000000000000000;
 		const x1 = x.toString();
     await maticPoSClient.burnERC20(config.maticWETH, x1, {
       from: account,
@@ -209,7 +197,7 @@ const App = () => {
 
   const exitEther = async () => {
     const maticPoSClient = posClientGeneral();
-    await maticPoSClient.exitERC20(inputvalue, {
+    await maticPoSClient.exitERC20(inputValue, {
       from: account,
     }).then((res) => {
       console.log("exit o/p",res);
@@ -220,7 +208,7 @@ const App = () => {
 
   const depositERC20 = async () => {
     const maticPoSClient = posClientGeneral();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await maticPoSClient.approveERC20ForDeposit(config.goerliDERC20address, x1, {
       from: account,
@@ -232,7 +220,7 @@ const App = () => {
 
   const burnERC20 = async () => {
     const maticPoSClient = posClientBurn();
-    const x = inputvalue * 1000000000000000000;
+    const x = inputValue * 1000000000000000000;
 		const x1 = x.toString();
     await maticPoSClient.burnERC20(config.maticDERC20address, x1, {
       from: account,
@@ -243,7 +231,7 @@ const App = () => {
 
   const exitERC20 = async () => {
     const maticPoSClient = posClientGeneral();
-    await maticPoSClient.exitERC20(inputvalue, {
+    await maticPoSClient.exitERC20(inputValue, {
       from: account,
       gas: "7000000"
     }).then((res) => {
@@ -258,7 +246,7 @@ const App = () => {
   // Plasma ether functionality
   const depositEtherPlasma = async () => {
     const { matic } = await getMaticPlasmaClient();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.depositEther(x1,{
       from: account
@@ -271,7 +259,7 @@ const App = () => {
 
   const burnEtherPlasma = async () => {
     const { matic } = await getMaticPlasmaClientBurn();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.startWithdraw(config.childMTXaddress, x1, {
       from:account
@@ -282,7 +270,7 @@ const App = () => {
 
   const confirmWithdrawEtherPlasma = async () => {
     const { matic } = await getMaticPlasmaClient();
-    await matic.withdraw(inputvalue, { from:account, gas: "7000000" }).then((res) => {
+    await matic.withdraw(inputValue, { from:account, gas: "7000000" }).then((res) => {
       console.log("Confirm withdraw hash: ", res.transactionHash);
     });
   }
@@ -297,7 +285,7 @@ const App = () => {
   // Plasma ERC20 functionality 
   const depositERC20Plasma = async () => {
     const { matic } = await getMaticPlasmaClient();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.approveERC20TokensForDeposit(config.mainTestToken, x1, {
       from:account,
@@ -309,7 +297,7 @@ const App = () => {
     });
   }
   const burnERC20Plasma = async () => {
-    const x = inputvalue * 1000000000000000000; // 18 decimals
+    const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     maticPlasmaBurn.startWithdraw(config.MaticTestToken, x1, {
             from:account,
@@ -319,7 +307,7 @@ const App = () => {
   }
 
   const confirmWithdrawERC20Plasma = async () => {
-    maticPlasma.withdraw(inputvalue, {
+    maticPlasma.withdraw(inputValue, {
       from:account,
     })
     .then((res) => {
@@ -334,18 +322,13 @@ const App = () => {
     });
   }
   if (loading === true) {
-    content = (
-      <p className="text-center">
-        Loading...{loading2 ? <div>load on mainenet </div> : ""}
-      </p>
-    );
   } else {
     content = (
       <div>
         <div id="POS" hidden={selectedBridgeOption.label === "Proof of Stake" ? false : true}>
-          <h1>PoS</h1>
+
           <div id="Ether" hidden={selectedToken.label === "Ether" && selectedBridgeOption.label === "Proof of Stake" ? false : true}>
-          <h1>ETHER</h1>
+
 
             <button
               onClick={depositEther}
@@ -370,17 +353,16 @@ const App = () => {
 
             <br />
             <input
-              id="inputvalue"
+              id="inputValue"
               type="text"
               placeholder="value"
-              name="inputvalue"
-              value={inputvalue}
+              name="inputValue"
+              value={inputValue}
               onChange={onchange}
               required
             />
           </div>
           <div id="ERC20" hidden={selectedToken.label === "ERC20" && selectedBridgeOption.label === "Proof of Stake" ? false : true}>
-          <h1>ERC20</h1>
 
             <button
               onClick={depositERC20}
@@ -405,11 +387,11 @@ const App = () => {
 
             <br />
             <input
-              id="inputvalue"
+              id="inputValue"
               type="text"
               placeholder="value"
-              name="inputvalue"
-              value={inputvalue}
+              name="inputValue"
+              value={inputValue}
               onChange={onchange}
               required
             />
@@ -418,9 +400,9 @@ const App = () => {
         </div>
         
         <div id = "plasma" hidden={selectedBridgeOption.label === "Plasma" ? false : true}>
-        <h1>Plasma</h1>
+
           <div id="PlasmaEther" hidden={selectedToken.label === "Ether" ? false : true} >
-          <h1>ETHER</h1>
+
 
             <button
               onClick={depositEtherPlasma}
@@ -451,17 +433,16 @@ const App = () => {
 
             <br />
             <input
-              id="inputvalue"
+              id="inputValue"
               type="text"
               placeholder="value"
-              name="inputvalue"
-              value={inputvalue}
+              name="inputValue"
+              value={inputValue}
               onChange={onchange}
               required
             />
           </div>
           <div id="PlasmaERC20" hidden={selectedToken.label === "ERC20" ? false : true}>
-          <h1>ERC20</h1>
 
           <button
             onClick={depositERC20Plasma}
@@ -492,11 +473,11 @@ const App = () => {
 
           <br />
           <input
-            id="inputvalue"
+            id="inputValue"
             type="text"
             placeholder="value"
-            name="inputvalue"
-            value={inputvalue}
+            name="inputValue"
+            value={inputValue}
             onChange={onchange}
             required
           />
