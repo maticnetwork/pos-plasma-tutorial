@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import ERC20abi from "./contracts/Token.json";
 import Web3 from "web3";
 import Navbar from "./Navbar";
 import WalletConnectProvider from "@maticnetwork/walletconnect-provider";
@@ -8,7 +7,6 @@ const MaticPOSClient = require("@maticnetwork/maticjs").MaticPOSClient;
 const Network = require("@maticnetwork/meta/network");
 const Matic = require("@maticnetwork/maticjs");
 
-console.log("MATIC",Matic);
 const App = () => {
   useEffect(() => {
     loadWeb3();
@@ -16,20 +14,39 @@ const App = () => {
   }, []);
   let content;
   const [loading2, setloading2] = useState(false);
-
   const [Networkid, setNetworkid] = useState(0);
   const [account, setAccount] = useState("");
   const [loading, setLoading] = useState(true);
-  const [ERC20, setERC20] = useState({});
-  const [Maticweb3, setMaticweb3] = useState();
-  const [Goerliweb3, setGoerliweb3] = useState();
-  const [MycontractAddress, setMycontractaddress] = useState("");
   const [inputvalue, setinputvalue] = useState("");
 	const [burnHash, setburnHash] = useState("");
-  const [maticSdk, setmaticSdk] = useState();
   const [maticprovider, setMaticprovider] = useState();
   const [goerliprovider, setgoerliprovider] = useState();
-  const [erc20balance, seterc20balance] = useState("");
+  const [bridgeOptions] =  useState([
+    {
+      label:"Proof of Stake",
+      value:"Proof of Stake"
+    },
+    {
+      label:"Plasma",
+      value:"Plasma"
+    }
+  ]);
+  const [tokenTypes] = useState([
+    {
+      label:"Ether",
+      value:"Ether"
+    },
+    {
+      label:"ERC20",
+      value:"ERC20"
+    }
+  ]);
+  const [selectedBridgeOption,setSelectedBridgeOption] = useState({
+    label:"Proof of Stake"
+  });
+  const [selectedToken, setSelectedToken] = useState({
+    label:"Ether"
+  });
 
   const loadWeb3 = async () => {
     if (window.ethereum) {
@@ -43,6 +60,7 @@ const App = () => {
       );
     }
   };
+
 
   const loadBlockchainData = async () => {
     setLoading(true);
@@ -64,11 +82,6 @@ const App = () => {
 
     setMaticprovider(maticProvider);
     setgoerliprovider(goerliProvider);
-
-    const maticWeb3 = new Web3(maticProvider);
-    setMaticweb3(maticWeb3);
-    const goerilWeb3 = new Web3(goerliProvider);
-    setGoerliweb3(goerilWeb3);
     const web3 = window.web3;
 
     const accounts = await web3.eth.getAccounts();
@@ -78,20 +91,9 @@ const App = () => {
     setNetworkid(networkId);
 
     if (networkId === 5) {
-      const erc20 = new web3.eth.Contract(ERC20abi.abi, config.goerliDerc20address);
-      const name = await erc20.methods.balanceOf(accounts[0]).call();
-      const balance = name / 1000000000000000000; // 18 decimals
-      console.log(balance);
-      seterc20balance(balance);
-
-      setERC20(erc20);
       setLoading(false);
     } else if (networkId === 80001) {
-      const erc20 = new web3.eth.Contract(ERC20abi.abi, config.maticDerc20address);
-      const name = await erc20.methods.balanceOf(accounts[0]).call();
-      const balance = name / 1000000000000000000; // 18 decimals
-      console.log(balance);
-      seterc20balance(balance);
+
       setLoading(false);
     } else {
       window.alert(" contract not deployed to detected network.");
@@ -151,7 +153,6 @@ const App = () => {
 
     // getMaticPlasmaClientBurn facilitates the operations like approve, deposit,confirmWithdraw ,exit 
   const getMaticPlasmaClientBurn = async (_network = "testnet", _version = "mumbai") => {
-    const network = new Network(_network, _version);
     const matic = new Matic({
     network: _network,
     version: _version,
@@ -163,7 +164,7 @@ const App = () => {
 
     });
     await matic.initialize();
-    return { matic, network };
+    return { matic };
   };
 
   const maticPlasma = new Matic({
@@ -183,14 +184,6 @@ const maticPlasmaBurn = new Matic({
   registry: "0xeE11713Fe713b2BfF2942452517483654078154D",
 })
   // POS ether functionality
-  const Approve = async () => {
-		const maticPOSClient = posclientGeneral();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    await maticPOSClient.approveERC20ForDeposit(config.goerliDerc20address, x1, {
-      from: account,
-    });
-  };
 
   const DepositEther = async () => {
     const maticPOSClient = posclientGeneral();
@@ -224,19 +217,14 @@ const maticPlasmaBurn = new Matic({
   };
 
   // POS ERC20 functionality
-  const ApproveERC20 = async () => {
-		const maticPOSClient = posclientGeneral();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    await maticPOSClient.approveERC20ForDeposit(config.goerliDerc20address, x1, {
-      from: account,
-    });
-  };
 
   const DepositERC20 = async () => {
     const maticPOSClient = posclientGeneral();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
+    await maticPOSClient.approveERC20ForDeposit(config.goerliDerc20address, x1, {
+      from: account,
+    });
     await maticPOSClient.depositERC20ForUser(config.goerliDerc20address,account, x1, {
       from: account,
     });
@@ -269,7 +257,7 @@ const maticPlasmaBurn = new Matic({
 
   // Plasma ether functionality
   const depositEtherPlasma = async () => {
-    const { matic,network } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaClient();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.depositEther(x1,{
@@ -279,13 +267,10 @@ const maticPlasmaBurn = new Matic({
 
     })
   }
-  
-  const ApproveEtherPlasma = async () => {
-    console.log("approve")
-  }
+
 
   const burnEtherPlasma = async () => {
-    const { matic,network } = await getMaticPlasmaClientBurn();
+    const { matic } = await getMaticPlasmaClientBurn();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.startWithdraw(config.childMTXaddress, x1, {
@@ -296,14 +281,14 @@ const maticPlasmaBurn = new Matic({
   }
 
   const confirmWithdrawEtherPlasma = async () => {
-    const { matic,network } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaClient();
     await matic.withdraw(inputvalue, { from:account, gas: "7000000" }).then((res) => {
       console.log("Confirm withdraw hash: ", res.transactionHash);
     });
   }
 
   const exitEtherPlasma = async () => {
-    const { matic,network } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaClient();
     await matic.processExits(config.mainMaticWETH, {from:account, gasPrice:"7000000"}).then((res)=> {
       console.log("process exit",res.transactionHash);
     })
@@ -311,7 +296,7 @@ const maticPlasmaBurn = new Matic({
 
   // Plasma ERC20 functionality 
   const depositERC20Plasma = async () => {
-    const { matic,network } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaClient();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.approveERC20TokensForDeposit(config.mainTestToken, x1, {
@@ -324,28 +309,26 @@ const maticPlasmaBurn = new Matic({
     });
   }
   const burnERC20Plasma = async () => {
-    const { matic,network } = await getMaticPlasmaClientBurn();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     maticPlasmaBurn.startWithdraw(config.MaticTestToken, x1, {
             from:account,
         }).then((res) => {
-            console.log(res.transactionHash) // eslint-disable-line
+            console.log(res.transactionHash)
         })
   }
 
   const confirmWithdrawERC20Plasma = async () => {
-    const { matic,network } = await getMaticPlasmaClient();
     maticPlasma.withdraw(inputvalue, {
       from:account,
     })
     .then((res) => {
-      console.log(res.transactionHash); // eslint-disable-line
+      console.log(res.transactionHash);
     })
   }
 
   const exitERC20Plasma = async () => {
-    const { matic,network } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaClient();
     await matic.processExits(config.mainTestToken, { from:account, gas: "7000000" }).then((res) => {
       console.log("Exit hash: ", res.transactionHash);
     });
@@ -359,189 +342,169 @@ const maticPlasmaBurn = new Matic({
   } else {
     content = (
       <div>
-        <h1>**POS**</h1>
-        <h1>ETHER</h1>
+        <div id="POS" hidden={selectedBridgeOption.label === "Proof of Stake" ? false : true}>
+          <h1>**POS**</h1>
+          <div id="Ether" hidden={selectedToken.label === "Ether" && selectedBridgeOption.label === "Proof of Stake" ? false : true}>
+          <h1>ETHER</h1>
 
-        <button
-          onClick={Approve}
-          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-        >
-          Approve
-        </button>
+            <button
+              onClick={DepositEther}
+              disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
+            >
+              Deposit
+            </button>
 
-        <button
-          onClick={DepositEther}
-          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-        >
-          Deposit
-        </button>
+            <button
+              onClick={burnEther}
+              disabled={Networkid !== 0 && Networkid === 5 ? true : false}
+            >
+              burn
+            </button>
 
-        <button
-          onClick={burnEther}
-          disabled={Networkid !== 0 && Networkid === 5 ? true : false}
-        >
-          burn
-        </button>
+            <button
+              onClick={exitEther}
+              disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+            >
+              exit
+            </button>
 
-        <button
-          onClick={exitEther}
-          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
-        >
-          exit
-        </button>
+            <br />
+            <input
+              id="inputvalue"
+              type="text"
+              placeholder="value"
+              name="inputvalue"
+              value={inputvalue}
+              onChange={onchange}
+              required
+            />
+          </div>
+          <div id="ERC20" hidden={selectedToken.label === "ERC20" && selectedBridgeOption.label === "Proof of Stake" ? false : true}>
+          <h1>ERC20</h1>
 
-        <br />
-        <p></p>
-        <input
-          id="inputvalue"
-          type="text"
-          placeholder="value"
-          name="inputvalue"
-          value={inputvalue}
-          onChange={onchange}
-          required
-        />
-				<p id="burnHash">{burnHash}</p>
+            <button
+              onClick={DepositERC20}
+              disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
+            >
+              Deposit
+            </button>
 
-        <h1>ERC20</h1>
+            <button
+              onClick={burnERC20}
+              disabled={Networkid !== 0 && Networkid === 5 ? true : false}
+            >
+              burn
+            </button>
 
-        <button
-          onClick={ApproveERC20}
-          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-        >
-          Approve
-        </button>
+            <button
+              onClick={exitERC20}
+              disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+            >
+              exit
+            </button>
 
-        <button
-          onClick={DepositERC20}
-          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-        >
-          Deposit
-        </button>
+            <br />
+            <input
+              id="inputvalue"
+              type="text"
+              placeholder="value"
+              name="inputvalue"
+              value={inputvalue}
+              onChange={onchange}
+              required
+            />
+          </div>
+          
+        </div>
+        
+        <div id = "plasma" hidden={selectedBridgeOption.label === "Plasma" ? false : true}>
+        <h1>**PLASMA**</h1>
+          <div id="PlasmaEther" hidden={selectedToken.label === "Ether" ? false : true} >
+          <h1>ETHER</h1>
 
-        <button
-          onClick={burnERC20}
-          disabled={Networkid !== 0 && Networkid === 5 ? true : false}
-        >
-          burn
-        </button>
+            <button
+              onClick={depositEtherPlasma}
+              disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
+            >
+              Deposit
+            </button>
 
-        <button
-          onClick={exitERC20}
-          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
-        >
-          exit
-        </button>
+            <button
+              onClick={burnEtherPlasma}
+              disabled={Networkid !== 0 && Networkid === 5 ? true : false}
+            >
+              burn
+            </button>
+            <button
+              onClick={confirmWithdrawEtherPlasma}
+              disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+            >
+              Confirm Withdraw
+            </button>
 
-        <br />
-        <p></p>
-        <input
-          id="inputvalue"
-          type="text"
-          placeholder="value"
-          name="inputvalue"
-          value={inputvalue}
-          onChange={onchange}
-          required
-        />
-				<p id="burnHash">{burnHash}</p>
+            <button
+              onClick={exitEtherPlasma}
+              disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+            >
+              exit
+            </button>
 
-        <h1>**PLASMA ETHER**</h1>
+            <br />
+            <input
+              id="inputvalue"
+              type="text"
+              placeholder="value"
+              name="inputvalue"
+              value={inputvalue}
+              onChange={onchange}
+              required
+            />
+          </div>
+          <div id="PlasmaERC20" hidden={selectedToken.label === "ERC20" ? false : true}>
+          <h1>ERC20</h1>
 
-        <button
-          onClick={ApproveEtherPlasma}
-          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-        >
-          Approve
-        </button>
+          <button
+            onClick={depositERC20Plasma}
+            disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
+          >
+            Deposit
+          </button>
 
-        <button
-          onClick={depositEtherPlasma}
-          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-        >
-          Deposit
-        </button>
+          <button
+            onClick={burnERC20Plasma}
+            disabled={Networkid !== 0 && Networkid === 5 ? true : false}
+          >
+            burn
+          </button>
+          <button
+            onClick={confirmWithdrawERC20Plasma}
+            disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+          >
+            Confirm Withdraw
+          </button>
 
-        <button
-          onClick={burnEtherPlasma}
-          disabled={Networkid !== 0 && Networkid === 5 ? true : false}
-        >
-          burn
-        </button>
-        <button
-          onClick={confirmWithdrawEtherPlasma}
-          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
-        >
-          Confirm Withdraw
-        </button>
+          <button
+            onClick={exitERC20Plasma}
+            disabled={Networkid !== 0 && Networkid === 5 ? false : true}
+          >
+            exit
+          </button>
 
-        <button
-          onClick={exitEtherPlasma}
-          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
-        >
-          exit
-        </button>
-
-        <br />
-        <p></p>
-        <input
-          id="inputvalue"
-          type="text"
-          placeholder="value"
-          name="inputvalue"
-          value={inputvalue}
-          onChange={onchange}
-          required
-        />
-				<p id="burnHash">{burnHash}</p>
-        <h1>**PLASMA ERC20**</h1>
-
-        <button
-          onClick={ApproveEtherPlasma}
-          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-        >
-          Approve
-        </button>
-
-        <button
-          onClick={depositERC20Plasma}
-          disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-        >
-          Deposit
-        </button>
-
-        <button
-          onClick={burnERC20Plasma}
-          disabled={Networkid !== 0 && Networkid === 5 ? true : false}
-        >
-          burn
-        </button>
-        <button
-          onClick={confirmWithdrawERC20Plasma}
-          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
-        >
-          Confirm Withdraw
-        </button>
-
-        <button
-          onClick={exitERC20Plasma}
-          disabled={Networkid !== 0 && Networkid === 5 ? false : true}
-        >
-          exit
-        </button>
-
-        <br />
-        <p></p>
-        <input
-          id="inputvalue"
-          type="text"
-          placeholder="value"
-          name="inputvalue"
-          value={inputvalue}
-          onChange={onchange}
-          required
-        />
-				<p id="burnHash">{burnHash}</p>
+          <br />
+          <input
+            id="inputvalue"
+            type="text"
+            placeholder="value"
+            name="inputvalue"
+            value={inputvalue}
+            onChange={onchange}
+            required
+          />
+          <p id="burnHash">{burnHash}</p>
+          </div>
+          
+        </div>
+        
       </div>
     );
   }
@@ -549,6 +512,32 @@ const maticPlasmaBurn = new Matic({
   return (
     <div>
       <Navbar account={account} />
+      <div>
+      <select onChange={(e) => setSelectedBridgeOption({label:e.target.value})}>
+        {bridgeOptions.map(item => (
+          <option
+            key={item.value}
+            value={item.value}
+          >
+            {item.label}
+          </option>
+        ))}
+      </select>
+      </div>
+      <div>
+      <select onChange={(e) => setSelectedToken({label:e.target.value})}>
+        {tokenTypes.map(item => (
+          <option
+            key={item.value}
+            value={item.value}
+            
+          >
+            {item.label}
+          </option>
+        ))}
+      </select>
+      </div>
+      
       {content}
     </div>
   );
