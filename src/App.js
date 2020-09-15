@@ -99,7 +99,7 @@ const App = () => {
     }
   };
   // posClientGeneral facilitates the operations like approve, deposit, exit  
-  const posClientGeneral = () => {
+  const posClientParent = () => {
     const maticPoSClient = new MaticPoSClient({
       network: "testnet",
       version: "mumbai",
@@ -111,7 +111,7 @@ const App = () => {
     return maticPoSClient;
   };
   // posclientBurn facilitates the burning of tokens on the matic chain
-  const posClientBurn = () => {
+  const posClientChild = () => {
     const maticPoSClient = new MaticPoSClient({
       network: "testnet",
       version: "mumbai",
@@ -123,7 +123,7 @@ const App = () => {
     return maticPoSClient;
   };
 // getMaticPlasmaClient facilitates the burning of tokens on the matic chain
-  const getMaticPlasmaClient = async (_network = "testnet", _version = "mumbai") => {
+  const getMaticPlasmaParent = async (_network = "testnet", _version = "mumbai") => {
     const network = new Network(_network, _version);
     const matic = new Matic({
     network: _network,
@@ -140,7 +140,7 @@ const App = () => {
   };
 
     // getMaticPlasmaClientBurn facilitates the operations like approve, deposit,confirmWithdraw ,exit 
-  const getMaticPlasmaClientBurn = async (_network = "testnet", _version = "mumbai") => {
+  const getMaticPlasmaChild = async (_network = "testnet", _version = "mumbai") => {
     const matic = new Matic({
     network: _network,
     version: _version,
@@ -174,7 +174,7 @@ const App = () => {
   // POS ether functionality
 
   const depositEther = async () => {
-    const maticPoSClient = posClientGeneral();
+    const maticPoSClient = posClientParent();
     const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
 
@@ -184,7 +184,7 @@ const App = () => {
   };
 
   const burnEther = async () => {
-    const maticPoSClient = posClientBurn();
+    const maticPoSClient = posClientChild();
     const x = inputValue * 1000000000000000000;
 		const x1 = x.toString();
     await maticPoSClient.burnERC20(config.maticWETH, x1, {
@@ -196,7 +196,7 @@ const App = () => {
   };
 
   const exitEther = async () => {
-    const maticPoSClient = posClientGeneral();
+    const maticPoSClient = posClientParent();
     await maticPoSClient.exitERC20(inputValue, {
       from: account,
     }).then((res) => {
@@ -207,7 +207,7 @@ const App = () => {
   // POS ERC20 functionality
 
   const depositERC20 = async () => {
-    const maticPoSClient = posClientGeneral();
+    const maticPoSClient = posClientParent();
     const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await maticPoSClient.approveERC20ForDeposit(config.goerliDERC20address, x1, {
@@ -219,7 +219,7 @@ const App = () => {
   };
 
   const burnERC20 = async () => {
-    const maticPoSClient = posClientBurn();
+    const maticPoSClient = posClientChild();
     const x = inputValue * 1000000000000000000;
 		const x1 = x.toString();
     await maticPoSClient.burnERC20(config.maticDERC20address, x1, {
@@ -230,7 +230,7 @@ const App = () => {
   };
 
   const exitERC20 = async () => {
-    const maticPoSClient = posClientGeneral();
+    const maticPoSClient = posClientParent();
     await maticPoSClient.exitERC20(inputValue, {
       from: account,
       gas: "7000000"
@@ -245,7 +245,7 @@ const App = () => {
 
   // Plasma ether functionality
   const depositEtherPlasma = async () => {
-    const { matic } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaParent();
     const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.depositEther(x1,{
@@ -258,7 +258,7 @@ const App = () => {
 
 
   const burnEtherPlasma = async () => {
-    const { matic } = await getMaticPlasmaClientBurn();
+    const { matic } = await getMaticPlasmaChild();
     const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.startWithdraw(config.childMTXaddress, x1, {
@@ -269,14 +269,14 @@ const App = () => {
   }
 
   const confirmWithdrawEtherPlasma = async () => {
-    const { matic } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaParent();
     await matic.withdraw(inputValue, { from:account, gas: "7000000" }).then((res) => {
       console.log("Confirm withdraw hash: ", res.transactionHash);
     });
   }
 
   const exitEtherPlasma = async () => {
-    const { matic } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaParent();
     await matic.processExits(config.mainMaticWETH, {from:account, gasPrice:"7000000"}).then((res)=> {
       console.log("process exit",res.transactionHash);
     })
@@ -284,7 +284,7 @@ const App = () => {
 
   // Plasma ERC20 functionality 
   const depositERC20Plasma = async () => {
-    const { matic } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaParent();
     const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
     await matic.approveERC20TokensForDeposit(config.mainTestToken, x1, {
@@ -316,7 +316,7 @@ const App = () => {
   }
 
   const exitERC20Plasma = async () => {
-    const { matic } = await getMaticPlasmaClient();
+    const { matic } = await getMaticPlasmaParent();
     await matic.processExits(config.mainTestToken, { from:account, gas: "7000000" }).then((res) => {
       console.log("Exit hash: ", res.transactionHash);
     });
