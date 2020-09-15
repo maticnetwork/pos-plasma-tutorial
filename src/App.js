@@ -7,7 +7,6 @@ const MaticPOSClient = require("@maticnetwork/maticjs").MaticPOSClient;
 const Network = require("@maticnetwork/meta/network");
 const Matic = require("@maticnetwork/maticjs");
 
-console.log("MATIC",Matic);
 const App = () => {
   useEffect(() => {
     loadWeb3();
@@ -154,7 +153,6 @@ const App = () => {
 
     // getMaticPlasmaClientBurn facilitates the operations like approve, deposit,confirmWithdraw ,exit 
   const getMaticPlasmaClientBurn = async (_network = "testnet", _version = "mumbai") => {
-    const network = new Network(_network, _version);
     const matic = new Matic({
     network: _network,
     version: _version,
@@ -186,14 +184,6 @@ const maticPlasmaBurn = new Matic({
   registry: "0xeE11713Fe713b2BfF2942452517483654078154D",
 })
   // POS ether functionality
-  const Approve = async () => {
-		const maticPOSClient = posclientGeneral();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    await maticPOSClient.approveERC20ForDeposit(config.goerliDerc20address, x1, {
-      from: account,
-    });
-  };
 
   const DepositEther = async () => {
     const maticPOSClient = posclientGeneral();
@@ -227,19 +217,14 @@ const maticPlasmaBurn = new Matic({
   };
 
   // POS ERC20 functionality
-  const ApproveERC20 = async () => {
-		const maticPOSClient = posclientGeneral();
-    const x = inputvalue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    await maticPOSClient.approveERC20ForDeposit(config.goerliDerc20address, x1, {
-      from: account,
-    });
-  };
 
   const DepositERC20 = async () => {
     const maticPOSClient = posclientGeneral();
     const x = inputvalue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
+    await maticPOSClient.approveERC20ForDeposit(config.goerliDerc20address, x1, {
+      from: account,
+    });
     await maticPOSClient.depositERC20ForUser(config.goerliDerc20address,account, x1, {
       from: account,
     });
@@ -282,10 +267,7 @@ const maticPlasmaBurn = new Matic({
 
     })
   }
-  
-  const ApproveEtherPlasma = async () => {
-    console.log("approve")
-  }
+
 
   const burnEtherPlasma = async () => {
     const { matic } = await getMaticPlasmaClientBurn();
@@ -364,12 +346,6 @@ const maticPlasmaBurn = new Matic({
           <h1>**POS**</h1>
           <div id="Ether" hidden={selectedToken.label === "Ether" && selectedBridgeOption.label === "Proof of Stake" ? false : true}>
           <h1>ETHER</h1>
-            <button
-              onClick={Approve}
-              disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-            >
-              Approve
-            </button>
 
             <button
               onClick={DepositEther}
@@ -403,14 +379,8 @@ const maticPlasmaBurn = new Matic({
               required
             />
           </div>
-          <div id="ERC20" id="Ether" hidden={selectedToken.label === "ERC20" && selectedBridgeOption.label === "Proof of Stake" ? false : true}>
+          <div id="ERC20" hidden={selectedToken.label === "ERC20" && selectedBridgeOption.label === "Proof of Stake" ? false : true}>
           <h1>ERC20</h1>
-            <button
-              onClick={ApproveERC20}
-              disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-            >
-              Approve
-            </button>
 
             <button
               onClick={DepositERC20}
@@ -451,12 +421,6 @@ const maticPlasmaBurn = new Matic({
         <h1>**PLASMA**</h1>
           <div id="PlasmaEther" hidden={selectedToken.label === "Ether" ? false : true} >
           <h1>ETHER</h1>
-            <button
-              onClick={ApproveEtherPlasma}
-              disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-            >
-              Approve
-            </button>
 
             <button
               onClick={depositEtherPlasma}
@@ -498,13 +462,6 @@ const maticPlasmaBurn = new Matic({
           </div>
           <div id="PlasmaERC20" hidden={selectedToken.label === "ERC20" ? false : true}>
           <h1>ERC20</h1>
-
-          <button
-            onClick={ApproveEtherPlasma}
-            disabled={Networkid !== 0 && Networkid === 80001 ? true : false}
-          >
-            Approve
-          </button>
 
           <button
             onClick={depositERC20Plasma}
