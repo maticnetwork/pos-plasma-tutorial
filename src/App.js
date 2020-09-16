@@ -155,22 +155,6 @@ const App = () => {
     return { matic };
   };
 
-  const maticPlasma = new Matic({
-    maticProvider: maticProvider,
-    parentProvider: window.web3,
-    rootChain: "0x2890bA17EfE978480615e330ecB65333b880928e",
-    withdrawManager: "0x2923C8dD6Cdf6b2507ef91de74F1d5E0F11Eac53",
-    depositManager: "0x7850ec290A2e2F40B82Ed962eaf30591bb5f5C96",
-    registry: "0xeE11713Fe713b2BfF2942452517483654078154D",
-  });
-  const maticPlasmaBurn = new Matic({
-    maticProvider: window.web3,
-    parentProvider: window.web3,
-    rootChain: "0x2890bA17EfE978480615e330ecB65333b880928e",
-    withdrawManager: "0x2923C8dD6Cdf6b2507ef91de74F1d5E0F11Eac53",
-    depositManager: "0x7850ec290A2e2F40B82Ed962eaf30591bb5f5C96",
-    registry: "0xeE11713Fe713b2BfF2942452517483654078154D",
-  });
   // POS ether functionality
 
   const depositEther = async () => {
@@ -303,33 +287,37 @@ const App = () => {
     const { matic } = await getMaticPlasmaParent();
     const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
-    await matic.approveERC20TokensForDeposit(config.plasmaERC20, x1, {
+    await matic.approveERC20TokensForDeposit(config.plasmaRootERC20, x1, {
       from: account,
       gasPrice: "10000000000",
     });
-    return matic.depositERC20ForUser(config.plasmaERC20, account, x1, {
+    return matic.depositERC20ForUser(config.plasmaRootERC20, account, x1, {
       from: account,
       gasPrice: "10000000000",
     });
   };
   const burnERC20Plasma = async () => {
+    const { matic } = await getMaticPlasmaChild();
     const x = inputValue * 1000000000000000000; // 18 decimals
     const x1 = x.toString();
-    maticPlasmaBurn
+    matic
       .startWithdraw(config.plasmaChildERC20, x1, {
         from: account,
       })
       .then((res) => {
+        setBurnHash(res.transactionHash);
         console.log(res.transactionHash);
       });
   };
 
   const confirmWithdrawERC20Plasma = async () => {
-    maticPlasma
+    const { matic } = await getMaticPlasmaParent();
+    matic
       .withdraw(inputValue, {
         from: account,
       })
       .then((res) => {
+        setBurnHash(res.transactionHash);
         console.log(res.transactionHash);
       });
   };
@@ -392,6 +380,7 @@ const App = () => {
               onChange={onchange}
               required
             />
+            <p id="burnHash">{burnHash}</p>
           </div>
           <div
             id="ERC20"
@@ -433,6 +422,7 @@ const App = () => {
               onChange={onchange}
               required
             />
+            <p id="burnHash">{burnHash}</p>
           </div>
         </div>
 
@@ -481,6 +471,7 @@ const App = () => {
               onChange={onchange}
               required
             />
+            <p id="burnHash">{burnHash}</p>
           </div>
           <div
             id="PlasmaERC20"
