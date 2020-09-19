@@ -19,7 +19,7 @@ const App = () => {
   const [inputValue, setInputValue] = useState("");
   const [burnHash, setBurnHash] = useState("");
   const [maticProvider, setMaticProvider] = useState();
-  const [goerliprovider, setGoerliProvider] = useState();
+  const [ethereumprovider, setEthereumProvider] = useState();
   const [bridgeOptions] = useState([
     {
       label: "Proof of Stake",
@@ -70,16 +70,16 @@ const App = () => {
       },
     });
 
-    const goerliProvider = new WalletConnectProvider({
+    const ethereumProvider = new WalletConnectProvider({
       host: config.ETHEREUM_RPC,
       callbacks: {
-        onConnect: console.log("goeril connected"),
-        onDisconnect: console.log("goeril disconnected"),
+        onConnect: console.log("mainchain connected"),
+        onDisconnect: console.log("mainchain disconnected"),
       },
     });
 
     setMaticProvider(maticProvider);
-    setGoerliProvider(goerliProvider);
+    setEthereumProvider(ethereumProvider);
     const web3 = window.web3;
 
     const accounts = await web3.eth.getAccounts();
@@ -114,7 +114,7 @@ const App = () => {
       network: config.NETWORK,
       version: config.VERSION,
       maticProvider: window.web3,
-      parentProvider: goerliprovider,
+      parentProvider: ethereumprovider,
       parentDefaultOptions: { from: account },
       maticDefaultOptions: { from: account },
     });
@@ -146,7 +146,7 @@ const App = () => {
     const matic = new Matic({
       network: _network,
       version: _version,
-      parentProvider: goerliprovider,
+      parentProvider: ethereumprovider,
       maticProvider: window.web3,
       parentDefaultOptions: { from: account },
       maticDefaultOptions: { from: account },
