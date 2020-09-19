@@ -186,7 +186,7 @@ const App = () => {
     await maticPoSClient
       .exitERC20(inputValue, {
         from: account,
-        fastProof: true
+        fastProof: true,
       })
       .then((res) => {
         console.log("exit o/p", res);
@@ -265,7 +265,7 @@ const App = () => {
   const confirmWithdrawEtherPlasma = async () => {
     const { matic } = await getMaticPlasmaParent();
     await matic
-      .withdraw(inputValue, { from: account })
+      .withdraw(inputValue, { from: account, fastProof: true })
       .then((res) => {
         console.log("Confirm withdraw hash: ", res.transactionHash);
       });
@@ -313,6 +313,7 @@ const App = () => {
     matic
       .withdraw(inputValue, {
         from: account,
+        fastProof: true,
       })
       .then((res) => {
         setBurnHash(res.transactionHash);
@@ -323,7 +324,7 @@ const App = () => {
   const exitERC20Plasma = async () => {
     const { matic } = await getMaticPlasmaParent();
     await matic
-      .processExits(config.plasmaERC20, { from: account })
+      .processExits(config.plasmaRootERC20, { from: account })
       .then((res) => {
         console.log("Exit hash: ", res.transactionHash);
       });
@@ -342,28 +343,40 @@ const App = () => {
             id="Ether"
             hidden={
               selectedToken.label === "Ether" &&
-                selectedBridgeOption.label === "Proof of Stake"
+              selectedBridgeOption.label === "Proof of Stake"
                 ? false
                 : true
             }
           >
             <button
               onClick={depositEther}
-              disabled={Networkid !== 0 && Networkid === config.MATIC_CHAINID ? true : false}
+              disabled={
+                Networkid !== 0 && Networkid === config.MATIC_CHAINID
+                  ? true
+                  : false
+              }
             >
               Deposit
             </button>
 
             <button
               onClick={burnEther}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? true : false}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? true
+                  : false
+              }
             >
               burn
             </button>
 
             <button
               onClick={exitEther}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? false : true}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? false
+                  : true
+              }
             >
               exit
             </button>
@@ -384,28 +397,40 @@ const App = () => {
             id="ERC20"
             hidden={
               selectedToken.label === "ERC20" &&
-                selectedBridgeOption.label === "Proof of Stake"
+              selectedBridgeOption.label === "Proof of Stake"
                 ? false
                 : true
             }
           >
             <button
               onClick={depositERC20}
-              disabled={Networkid !== 0 && Networkid === config.MATIC_CHAINID ? true : false}
+              disabled={
+                Networkid !== 0 && Networkid === config.MATIC_CHAINID
+                  ? true
+                  : false
+              }
             >
               Deposit
             </button>
 
             <button
               onClick={burnERC20}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? true : false}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? true
+                  : false
+              }
             >
               burn
             </button>
 
             <button
               onClick={exitERC20}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? false : true}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? false
+                  : true
+              }
             >
               exit
             </button>
@@ -434,27 +459,43 @@ const App = () => {
           >
             <button
               onClick={depositEtherPlasma}
-              disabled={Networkid !== 0 && Networkid === config.MATIC_CHAINID ? true : false}
+              disabled={
+                Networkid !== 0 && Networkid === config.MATIC_CHAINID
+                  ? true
+                  : false
+              }
             >
               Deposit
             </button>
 
             <button
               onClick={burnEtherPlasma}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? true : false}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? true
+                  : false
+              }
             >
               burn
             </button>
             <button
               onClick={confirmWithdrawEtherPlasma}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? false : true}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? false
+                  : true
+              }
             >
               Confirm Withdraw
             </button>
 
             <button
               onClick={exitEtherPlasma}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? false : true}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? false
+                  : true
+              }
             >
               exit
             </button>
@@ -477,27 +518,43 @@ const App = () => {
           >
             <button
               onClick={depositERC20Plasma}
-              disabled={Networkid !== 0 && Networkid === config.MATIC_CHAINID ? true : false}
+              disabled={
+                Networkid !== 0 && Networkid === config.MATIC_CHAINID
+                  ? true
+                  : false
+              }
             >
               Deposit
             </button>
 
             <button
               onClick={burnERC20Plasma}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? true : false}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? true
+                  : false
+              }
             >
               burn
             </button>
             <button
               onClick={confirmWithdrawERC20Plasma}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? false : true}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? false
+                  : true
+              }
             >
               Confirm Withdraw
             </button>
 
             <button
               onClick={exitERC20Plasma}
-              disabled={Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID ? false : true}
+              disabled={
+                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
+                  ? false
+                  : true
+              }
             >
               exit
             </button>
