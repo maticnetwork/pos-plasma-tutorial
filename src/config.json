@@ -5,5 +5,11 @@
   "rootChainWETH": "0x60D4dB9b534EF9260a88b0BED6c486fe13E604Fc",
   "plasmaWETH": "0x4DfAe612aaCB5b448C12A591cD0879bFa2e51d62",
   "plasmaRootERC20": "0x3f152B63Ec5CA5831061B2DccFb29a874C317502",
-  "plasmaChildERC20": "0x2d7882beDcbfDDce29Ba99965dd3cdF7fcB10A1e"
+  "plasmaChildERC20": "0x2d7882beDcbfDDce29Ba99965dd3cdF7fcB10A1e",
+  "MATIC_RPC": "https://rpc-mumbai.matic.today",
+  "ETHEREUM_RPC": "https://goerli.infura.io/v3/541999c8adbc4c3594d03a6b7b71eda6",
+  "VERSION": "mumbai",
+  "NETWORK": "testnet",
+  "MATIC_CHAINID": 80001,
+  "ETHEREUM_CHAINID": 5
 }
