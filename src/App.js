@@ -186,7 +186,6 @@ const App = () => {
     await maticPoSClient
       .exitERC20(inputValue, {
         from: account,
-        fastProof: true,
       })
       .then((res) => {
         console.log("exit o/p", res);
@@ -225,7 +224,6 @@ const App = () => {
     await maticPoSClient
       .exitERC20(inputValue, {
         from: account,
-        fastProof: true,
       })
       .then((res) => {
         console.log("exit o/p", res);
@@ -265,7 +263,7 @@ const App = () => {
   const confirmWithdrawEtherPlasma = async () => {
     const { matic } = await getMaticPlasmaParent();
     await matic
-      .withdraw(inputValue, { from: account, fastProof: true })
+      .withdraw(inputValue, { from: account})
       .then((res) => {
         console.log("Confirm withdraw hash: ", res.transactionHash);
       });
@@ -313,7 +311,6 @@ const App = () => {
     matic
       .withdraw(inputValue, {
         from: account,
-        fastProof: true,
       })
       .then((res) => {
         setBurnHash(res.transactionHash);

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@maticnetwork/maticjs": "^2.0.6-beta.0",
+    "@maticnetwork/maticjs": "^2.0.12",
     "@maticnetwork/walletconnect-provider": "0.0.1-beta.1",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
