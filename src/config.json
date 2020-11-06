@@ -11,5 +11,5 @@
   "VERSION": "mumbai",
   "NETWORK": "testnet",
   "MATIC_CHAINID": 80001,
-  "ETHEREUM_CHAINID": 5
+  "ETHEREUM_CHAINID": 1
 }
