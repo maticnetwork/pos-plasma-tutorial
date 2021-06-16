@@ -1,8 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const axios = require("axios");
 const Web3 = require("web3");
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient, ObjectId } = require("mongodb");
 
 var web3 = new Web3(process.env.RPC_URL);
 
@@ -38,6 +39,24 @@ app.use(cors({credentials: true, origin: ["https://watchgod.matic.today", "http:
 
 app.get("/", async function (req, res) {
   res.send("Blocknative POC API");
+});
+
+app.post("/watch", async function (req, res) {
+  if !(/^0x([A-Fa-f0-9]{64})$/.test(req.hash)) {
+    res.sendStatus(400);
+    return;
+  }
+  axios.post("https://api.blocknative.com/transaction", {
+    "apiKey": process.env.API_KEY,
+    "hash": req.hash,
+    "blockchain": "ethereum",
+    "network": "goerli"
+  });
+  res.sendStatus(200);
+});
+
+app.get("/update", async function (req, res) {
+  res.sendStatus(200);
 });
 
 app.listen(process.env.PORT || 8080, () => {
