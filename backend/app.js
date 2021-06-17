@@ -42,7 +42,7 @@ app.get("/", async function (req, res) {
 });
 
 app.post("/watch", async function (req, res) {
-  if !(/^0x([A-Fa-f0-9]{64})$/.test(req.hash)) {
+  if (!/^0x([A-Fa-f0-9]{64})$/.test(req.hash)) {
     res.sendStatus(400);
     return;
   }
@@ -52,7 +52,14 @@ app.post("/watch", async function (req, res) {
     "blockchain": "ethereum",
     "network": "goerli"
   });
-  res.sendStatus(200);
+  const newDocument = {
+    hash: req.hash,
+    status: "watched",
+    lastCall: null,
+    timestamp: Date.now(),
+  };
+  const result = await collection.insertOne(newDocument);
+  res.send(result.data);
 });
 
 app.get("/update", async function (req, res) {
