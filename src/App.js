@@ -1,101 +1,40 @@
 import React, { useEffect, useState } from "react";
-import Web3 from "web3";
-import Navbar from "./Navbar";
+import { makeStyles } from "@material-ui/core/styles";
+
+import Navbar from "./components/Navbar";
+import { CircularProgress, Typography } from "@material-ui/core";
+import Alert from '@material-ui/lab/Alert';
+import { useWeb3Context } from './contexts/Web3Context';
+import config from "./utils/config.json";
+
 import WalletConnectProvider from "@maticnetwork/walletconnect-provider";
-const config = require("./config");
 const MaticPoSClient = require("@maticnetwork/maticjs").MaticPOSClient;
-const Network = require("@maticnetwork/meta/network");
-const Matic = require("@maticnetwork/maticjs");
 
 const App = () => {
-  useEffect(() => {
-    loadWeb3();
-    loadBlockchainData();
-  }, []);
-  let content;
-  const [Networkid, setNetworkid] = useState(0);
-  const [account, setAccount] = useState("");
-  const [loading, setLoading] = useState(true);
+  const classes = useStyles();
+
+  const { account, providerChainId } = useWeb3Context();
+  const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [burnHash, setBurnHash] = useState("");
   const [maticProvider, setMaticProvider] = useState();
-  const [ethereumprovider, setEthereumProvider] = useState();
-  const [bridgeOptions] = useState([
-    {
-      label: "Proof of Stake",
-      value: "Proof of Stake",
-    },
-    {
-      label: "Plasma",
-      value: "Plasma",
-    },
-  ]);
-  const [tokenTypes] = useState([
-    {
-      label: "Ether",
-      value: "Ether",
-    },
-    {
-      label: "ERC20",
-      value: "ERC20",
-    },
-  ]);
-  const [selectedBridgeOption, setSelectedBridgeOption] = useState({
-    label: "Proof of Stake",
-  });
-  const [selectedToken, setSelectedToken] = useState({
-    label: "Ether",
-  });
+  const [hash, setHash] = useState('');
+  const [error, setError] = useState('');
 
-  const loadWeb3 = async () => {
-    if (window.ethereum) {
-      window.web3 = new Web3(window.ethereum);
-      await window.ethereum.enable();
-    } else if (window.web3) {
-      window.web3 = new Web3(window.web3.currentProvider);
-    } else {
-      window.alert(
-        "Non-Ethereum browser detected. You should consider trying MetaMask!"
-      );
+  useEffect(() => {
+    const setProvider = async () => {
+      // matic provider set
+      const maticProvider = await new WalletConnectProvider({
+        host: config.MATIC_RPC,
+        callbacks: {
+          onConnect: console.log("matic connected"),
+          onDisconnect: console.log("matic disconnected!"),
+        },
+      });
+      setMaticProvider(maticProvider);
     }
-  };
+    setProvider();
+  }, [])
 
-  const loadBlockchainData = async () => {
-    setLoading(true);
-    const maticProvider = new WalletConnectProvider({
-      host: config.MATIC_RPC,
-      callbacks: {
-        onConnect: console.log("matic connected"),
-        onDisconnect: console.log("matic disconnected!"),
-      },
-    });
-
-    const ethereumProvider = new WalletConnectProvider({
-      host: config.ETHEREUM_RPC,
-      callbacks: {
-        onConnect: console.log("mainchain connected"),
-        onDisconnect: console.log("mainchain disconnected"),
-      },
-    });
-
-    setMaticProvider(maticProvider);
-    setEthereumProvider(ethereumProvider);
-    const web3 = window.web3;
-
-    const accounts = await web3.eth.getAccounts();
-    setAccount(accounts[0]);
-    const networkId = await web3.eth.net.getId();
-
-    setNetworkid(networkId);
-
-    if (networkId === config.ETHEREUM_CHAINID) {
-      setLoading(false);
-    } else if (networkId === config.MATIC_CHAINID) {
-      setLoading(false);
-    } else {
-      window.alert(" switch to  Matic or Ethereum network");
-    }
-  };
   // posClientGeneral facilitates the operations like approve, deposit, exit
   const posClientParent = () => {
     const maticPoSClient = new MaticPoSClient({
@@ -108,498 +47,231 @@ const App = () => {
     });
     return maticPoSClient;
   };
-  // posclientBurn facilitates the burning of tokens on the matic chain
-  const posClientChild = () => {
-    const maticPoSClient = new MaticPoSClient({
-      network: config.NETWORK,
-      version: config.VERSION,
-      maticProvider: window.web3,
-      parentProvider: ethereumprovider,
-      parentDefaultOptions: { from: account },
-      maticDefaultOptions: { from: account },
-    });
-    return maticPoSClient;
-  };
-  // getMaticPlasmaClient facilitates the burning of tokens on the matic chain
-  const getMaticPlasmaParent = async (
-    _network = config.NETWORK,
-    _version = config.VERSION
-  ) => {
-    const network = new Network(_network, _version);
-    const matic = new Matic({
-      network: _network,
-      version: _version,
-      parentProvider: window.web3,
-      maticProvider: maticProvider,
-      parentDefaultOptions: { from: account },
-      maticDefaultOptions: { from: account },
-    });
-    await matic.initialize();
-    return { matic, network };
-  };
-
-  // getMaticPlasmaClientBurn facilitates the operations like approve, deposit,confirmWithdraw ,exit
-  const getMaticPlasmaChild = async (
-    _network = config.NETWORK,
-    _version = config.VERSION
-  ) => {
-    const matic = new Matic({
-      network: _network,
-      version: _version,
-      parentProvider: ethereumprovider,
-      maticProvider: window.web3,
-      parentDefaultOptions: { from: account },
-      maticDefaultOptions: { from: account },
-    });
-    await matic.initialize();
-    return { matic };
-  };
-
-  // POS ether functionality
-
-  const depositEther = async () => {
-    const maticPoSClient = posClientParent();
-    const x = inputValue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-
-    await maticPoSClient.depositEtherForUser(account, x1, {
-      from: account,
-    });
-  };
-
-  const burnEther = async () => {
-    const maticPoSClient = posClientChild();
-    const x = inputValue * 1000000000000000000;
-    const x1 = x.toString();
-    await maticPoSClient
-      .burnERC20(config.posWETH, x1, {
-        from: account,
-      })
-      .then((res) => {
-        console.log(res.transactionHash);
-        setBurnHash(res.transactionHash);
-      });
-  };
-
-  const exitEther = async () => {
-    const maticPoSClient = posClientParent();
-    await maticPoSClient
-      .exitERC20(inputValue, {
-        from: account,
-      })
-      .then((res) => {
-        console.log("exit o/p", res);
-      });
-  };
-
-  // POS ERC20 functionality
-
-  const depositERC20 = async () => {
-    const maticPoSClient = posClientParent();
-    const x = inputValue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    await maticPoSClient.approveERC20ForDeposit(config.posRootERC20, x1, {
-      from: account,
-    });
-    await maticPoSClient.depositERC20ForUser(config.posRootERC20, account, x1, {
-      from: account,
-    });
-  };
-
-  const burnERC20 = async () => {
-    const maticPoSClient = posClientChild();
-    const x = inputValue * 1000000000000000000;
-    const x1 = x.toString();
-    await maticPoSClient
-      .burnERC20(config.posChildERC20, x1, {
-        from: account,
-      })
-      .then((res) => {
-        setBurnHash(res.transactionHash);
-      });
-  };
-
+  // POS ERC20 exit function
   const exitERC20 = async () => {
-    const maticPoSClient = posClientParent();
-    await maticPoSClient
-      .exitERC20(inputValue, {
-        from: account,
-      })
-      .then((res) => {
-        console.log("exit o/p", res);
-      });
-  };
-  const onchange = (e) => {
-    setInputValue(e.target.value);
-  };
+    setError('');
+    setHash('');
+    try {
+      setLoading(true);
+      const maticPoSClient = posClientParent();
+      const isDone = await maticPoSClient.isERC20ExitProcessed(inputValue);
+      console.log(isDone);
+      if (isDone) {
+        setLoading(false);
+        console.log("EXIT ALREADY PROCESSED");
+        setError('Withdraw process completed already.');
+        return;
+      }
+      await maticPoSClient
+        .exitERC20(inputValue, {
+          from: account,
+        })
+        .then((res) => {
+          console.log("Exit transaction hash: ", res);
+          setHash(res.transactionHash);
+          setLoading(false);
+        });
+    } catch (e) {
+      setLoading(false);
+      if (e.message.substr(0, 28) === `Returned values aren't valid`)
+        setError('Seems like you are not on Eth Network, change the network and refresh the page.')
 
-  // Plasma ether functionality
-  const depositEtherPlasma = async () => {
-    const { matic } = await getMaticPlasmaParent();
-    const x = inputValue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    await matic
-      .depositEther(x1, {
-        from: account,
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+      else if (e.message === `Cannot read property 'blockNumber' of null`)
+        setError('Incorrect burn transaction hash')
 
-  const burnEtherPlasma = async () => {
-    const { matic } = await getMaticPlasmaChild();
-    const x = inputValue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    await matic
-      .startWithdraw(config.plasmaWETH, x1, {
-        from: account,
-      })
-      .then((res) => {
-        console.log("burn ether plasma txn hash", res.transactionHash);
-      });
-  };
+      else if (e.message.substr(0, 32) === `Returned error: invalid argument`)
+        setError('Incorrect burn transaction hash')
 
-  const confirmWithdrawEtherPlasma = async () => {
-    const { matic } = await getMaticPlasmaParent();
-    await matic
-      .withdraw(inputValue, { from: account})
-      .then((res) => {
-        console.log("Confirm withdraw hash: ", res.transactionHash);
-      });
-  };
+      else if (e.message.substr(0, 49) === `Burn transaction has not been checkpointed as yet`)
+        setError('Burn transaction has not been checkpointed yet. Please wait for 1-3hrs.')
 
-  const exitEtherPlasma = async () => {
-    const { matic } = await getMaticPlasmaParent();
-    await matic
-      .processExits(config.rootChainWETH, {
-        from: account,
-      })
-      .then((res) => {
-        console.log("process exit", res.transactionHash);
-      });
+      else if (e.message.substr(0, 53) === `Invalid parameters: must provide an Ethereum address.`)
+        setError('Please refresh the page and try again.')
+
+      else if (e.message === `Log not found in receipt`)
+        setError('Please reach out to support team here and mention this error in your ticket.')
+
+      else if (e.message === 'Invalid response')
+        setError('Please try again after some time.');
+
+      else setError(e.message.substr(0, 80));
+      console.error(e);
+    }
   };
 
-  // Plasma ERC20 functionality
-  const depositERC20Plasma = async () => {
-    const { matic } = await getMaticPlasmaParent();
-    const x = inputValue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    await matic.approveERC20TokensForDeposit(config.plasmaRootERC20, x1, {
-      from: account,
-    });
-    return matic.depositERC20ForUser(config.plasmaRootERC20, account, x1, {
-      from: account,
-    });
-  };
-  const burnERC20Plasma = async () => {
-    const { matic } = await getMaticPlasmaChild();
-    const x = inputValue * 1000000000000000000; // 18 decimals
-    const x1 = x.toString();
-    matic
-      .startWithdraw(config.plasmaChildERC20, x1, {
-        from: account,
-      })
-      .then((res) => {
-        setBurnHash(res.transactionHash);
-        console.log(res.transactionHash);
-      });
-  };
-
-  const confirmWithdrawERC20Plasma = async () => {
-    const { matic } = await getMaticPlasmaParent();
-    matic
-      .withdraw(inputValue, {
-        from: account,
-      })
-      .then((res) => {
-        setBurnHash(res.transactionHash);
-        console.log(res.transactionHash);
-      });
-  };
-
-  const exitERC20Plasma = async () => {
-    const { matic } = await getMaticPlasmaParent();
-    await matic
-      .processExits(config.plasmaRootERC20, { from: account })
-      .then((res) => {
-        console.log("Exit hash: ", res.transactionHash);
-      });
-  };
-  if (loading === true) {
-  } else {
-    content = (
-      <div>
-        <div
-          id="POS"
-          hidden={
-            selectedBridgeOption.label === "Proof of Stake" ? false : true
-          }
-        >
-          <div
-            id="Ether"
-            hidden={
-              selectedToken.label === "Ether" &&
-              selectedBridgeOption.label === "Proof of Stake"
-                ? false
-                : true
-            }
-          >
-            <button
-              onClick={depositEther}
-              disabled={
-                Networkid !== 0 && Networkid === config.MATIC_CHAINID
-                  ? true
-                  : false
-              }
-            >
-              Deposit
-            </button>
-
-            <button
-              onClick={burnEther}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? true
-                  : false
-              }
-            >
-              burn
-            </button>
-
-            <button
-              onClick={exitEther}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? false
-                  : true
-              }
-            >
-              exit
-            </button>
-
-            <br />
-            <input
-              id="inputValue"
-              type="text"
-              placeholder="value"
-              name="inputValue"
-              value={inputValue}
-              onChange={onchange}
-              required
-            />
-            <p id="burnHash">{burnHash}</p>
-          </div>
-          <div
-            id="ERC20"
-            hidden={
-              selectedToken.label === "ERC20" &&
-              selectedBridgeOption.label === "Proof of Stake"
-                ? false
-                : true
-            }
-          >
-            <button
-              onClick={depositERC20}
-              disabled={
-                Networkid !== 0 && Networkid === config.MATIC_CHAINID
-                  ? true
-                  : false
-              }
-            >
-              Deposit
-            </button>
-
-            <button
-              onClick={burnERC20}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? true
-                  : false
-              }
-            >
-              burn
-            </button>
-
-            <button
-              onClick={exitERC20}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? false
-                  : true
-              }
-            >
-              exit
-            </button>
-
-            <br />
-            <input
-              id="inputValue"
-              type="text"
-              placeholder="value"
-              name="inputValue"
-              value={inputValue}
-              onChange={onchange}
-              required
-            />
-            <p id="burnHash">{burnHash}</p>
-          </div>
-        </div>
-
-        <div
-          id="plasma"
-          hidden={selectedBridgeOption.label === "Plasma" ? false : true}
-        >
-          <div
-            id="PlasmaEther"
-            hidden={selectedToken.label === "Ether" ? false : true}
-          >
-            <button
-              onClick={depositEtherPlasma}
-              disabled={
-                Networkid !== 0 && Networkid === config.MATIC_CHAINID
-                  ? true
-                  : false
-              }
-            >
-              Deposit
-            </button>
-
-            <button
-              onClick={burnEtherPlasma}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? true
-                  : false
-              }
-            >
-              burn
-            </button>
-            <button
-              onClick={confirmWithdrawEtherPlasma}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? false
-                  : true
-              }
-            >
-              Confirm Withdraw
-            </button>
-
-            <button
-              onClick={exitEtherPlasma}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? false
-                  : true
-              }
-            >
-              exit
-            </button>
-
-            <br />
-            <input
-              id="inputValue"
-              type="text"
-              placeholder="value"
-              name="inputValue"
-              value={inputValue}
-              onChange={onchange}
-              required
-            />
-            <p id="burnHash">{burnHash}</p>
-          </div>
-          <div
-            id="PlasmaERC20"
-            hidden={selectedToken.label === "ERC20" ? false : true}
-          >
-            <button
-              onClick={depositERC20Plasma}
-              disabled={
-                Networkid !== 0 && Networkid === config.MATIC_CHAINID
-                  ? true
-                  : false
-              }
-            >
-              Deposit
-            </button>
-
-            <button
-              onClick={burnERC20Plasma}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? true
-                  : false
-              }
-            >
-              burn
-            </button>
-            <button
-              onClick={confirmWithdrawERC20Plasma}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? false
-                  : true
-              }
-            >
-              Confirm Withdraw
-            </button>
-
-            <button
-              onClick={exitERC20Plasma}
-              disabled={
-                Networkid !== 0 && Networkid === config.ETHEREUM_CHAINID
-                  ? false
-                  : true
-              }
-            >
-              exit
-            </button>
-
-            <br />
-            <input
-              id="inputValue"
-              type="text"
-              placeholder="value"
-              name="inputValue"
-              value={inputValue}
-              onChange={onchange}
-              required
-            />
-            <p id="burnHash">{burnHash}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div>
-      <Navbar account={account} />
-      <div>
-        <select
-          onChange={(e) => setSelectedBridgeOption({ label: e.target.value })}
-        >
-          {bridgeOptions.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <select onChange={(e) => setSelectedToken({ label: e.target.value })}>
-          {tokenTypes.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+    <React.Fragment>
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Top Intro section */}
+      <div className={classes.inro}>
+        <Typography variant="h1" className={classes.title}>
+          Submit your transaction hash
+        </Typography>
+
+        <Typography variant="h1" className={classes.text}>
+          ➡    first step of your withdraw process on Polygon chain    ⬅
+        </Typography>
       </div>
 
-      {content}
-    </div>
+      {/* Input section */}
+      <section className={classes.body}>
+        <div className={classes.input}>
+          <input type="text" placeholder="0xaa30bf8f73dfdaa..." name="inputValue"
+            value={inputValue} onChange={(e) => setInputValue(e.target.value)} required
+          />
+        </div>
+        {loading ?
+          <CircularProgress />
+          :
+          <button className={classes.btn} onClick={exitERC20}
+            disabled={providerChainId === config.ETHEREUM_CHAINID ? false : true}>
+            Complete Withdraw
+          </button>
+        }
+        {hash &&
+          <Alert severity="success">This is a success alert — check it out!
+            Exit transaction hash: <a target="_blank" href={`https://etherscan.io/tx/${hash}`} rel="noreferrer">{hash}</a>
+          </Alert>
+        }
+        {error &&
+          <Alert severity="error">
+            {error}
+          </Alert>
+        }
+        {providerChainId !== config.ETHEREUM_CHAINID &&
+          <Alert severity="error">This is an error alert — check it out!
+            Seems like you are not on Eth Network, change the network and refresh the page.
+          </Alert>
+        }
+      </section>
+
+      {/* Instructions */}
+      <section className={classes.instructions}>
+        <Typography variant="h1" className={classes.topic}>
+          What it does?
+        </Typography>
+        <Typography variant="h1" className={classes.subTopic}>
+          Using this application is a very simple interface that will allow you to complete your withdraw process which you started on Polygon Network.
+          In case you have initiated your withdraw on the Polygon chain and you are not able to complete the final step of withdraw on
+          Ethereum, then you can use this interface.
+          <br />
+          <br />
+          To find your burn hash go to {'→'} <a target="_blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
+            href={`https://polygonscan.com/address/${account}#tokentxns`} rel="noreferrer">this link</a>
+          {' '} and look for the transaction with which you initiated the first step of withdraw process on Polygon chain.
+        </Typography>
+      </section>
+
+      <section className={classes.instructions}>
+        <Typography variant="h1" className={classes.topic}>
+          Instructions
+        </Typography>
+        <ul style={{ textAlign: 'left' }} className={classes.subTopic}>
+          <li>This application can be only used by MetaMask broswer extenstion.</li>
+          <li>This application can be used to withdraw all ERC20 tokens except MATIC.</li>
+          <li>Ensure that you are on Ethereum Network before going ahead with the steps below.</li>
+
+          <li>Paste the transaction hash of that transaction in the input box.</li>
+          <li>Click on Complete Withdraw and wait for the Metamask to popup.</li>
+          <li>Confirm the transaction. Its reccomended not to lower the gas fees or the gas limit.</li>
+          <li>Once the transaction gets completed, you will see a link to the transaction details on Ethereum. Do not refresh the screen.</li>
+          <li>Thats it. Your tokens will be safely withdrawn to your account on Ethereum.</li>
+        </ul>
+      </section>
+
+    </React.Fragment>
   );
 };
 
 export default App;
+
+const useStyles = makeStyles((theme) => ({
+  btn: {
+    height: "44px",
+    lineHeight: "44px",
+    padding: "0 20px",
+    border: "1px solid #8247E5",
+    borderRadius: "4px",
+    display: "inline-flex",
+    textTransform: "capitalize",
+    fontWeight: "600",
+    fontSize: 16,
+    position: "relative",
+    backgroundColor: "#061024",
+    color: "white",
+    cursor: 'pointer',
+    marginBottom: 20
+  },
+  inro: {
+    height: 200,
+    backgroundColor: '#854CE6',
+    textAlign: 'center',
+    padding: '35px 0'
+  },
+  title: {
+    marginBottom: 20,
+    fontSize: 36,
+    fontWeight: 800,
+    color: '#FFFFFF',
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: 400,
+    color: "#FFFFFF",
+  },
+  body: {
+    position: 'relative',
+    textAlign: 'center',
+    maxWidth: 852,
+    margin: 'auto'
+  },
+  input: {
+    maxWidth: 500,
+    position: 'relative',
+    top: -30,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: "white",
+    border: '1px solid #DCDFE6',
+    padding: '18px 15px',
+    boxSizing: 'border-box',
+    boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.08)',
+    borderRadius: 8,
+
+    "& input": {
+      background: "transparent",
+      fontSize: "16px",
+      fontWeight: "600",
+      color: "black",
+      display: "block",
+      border: 0,
+      outline: "none",
+      padding: 0,
+      width: '100%',
+    },
+  },
+  instructions: {
+    maxWidth: 852,
+    margin: '30px auto',
+    padding: 32,
+    background: '#EFE7FD',
+    border: '1px solid #E0CFFC',
+    boxSizing: 'border-box',
+    borderRadius: 8
+  },
+  topic: {
+    fontSize: 18,
+    color: '#601FCD',
+    fontWeight: 800,
+    marginBottom: 16
+  },
+  subTopic: {
+    fontSize: 16,
+    color: '#061024',
+    fontWeight: 400
+  }
+}));
+
