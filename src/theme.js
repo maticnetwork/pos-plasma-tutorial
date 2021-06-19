@@ -333,10 +333,10 @@ const theme = createMuiTheme({
         maxWidth: "1080px",
         margin: "auto",
         padding: "0",
-        ["@media (max-width:1120px)"]: {
+        "@media (max-width:1120px)": {
           padding: "0 20px",
         },
-        ["@media (max-width:599px)"]: {
+        "@media (max-width:599px)": {
           padding: "0 15px",
         },
       },

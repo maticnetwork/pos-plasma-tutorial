@@ -12,8 +12,8 @@ const MaticPoSClient = require("@maticnetwork/maticjs").MaticPOSClient;
 
 const App = () => {
   const classes = useStyles();
+  const { account, providerChainId, inj_provider } = useWeb3Context();
 
-  const { account, providerChainId } = useWeb3Context();
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [maticProvider, setMaticProvider] = useState();
@@ -22,6 +22,7 @@ const App = () => {
 
   useEffect(() => {
     const setProvider = async () => {
+      setLoading(true);
       // matic provider set
       const maticProvider = await new WalletConnectProvider({
         host: config.MATIC_RPC,
@@ -30,7 +31,9 @@ const App = () => {
           onDisconnect: console.log("matic disconnected!"),
         },
       });
+      console.log(maticProvider);
       setMaticProvider(maticProvider);
+      setLoading(false);
     }
     setProvider();
   }, [])
@@ -41,12 +44,13 @@ const App = () => {
       network: config.NETWORK,
       version: config.VERSION,
       maticProvider: maticProvider,
-      parentProvider: window.web3,
+      parentProvider: inj_provider,
       parentDefaultOptions: { from: account },
       maticDefaultOptions: { from: account },
     });
     return maticPoSClient;
   };
+
   // POS ERC20 exit function
   const exitERC20 = async () => {
     setError('');
@@ -123,16 +127,14 @@ const App = () => {
             value={inputValue} onChange={(e) => setInputValue(e.target.value)} required
           />
         </div>
-        {loading ?
-          <CircularProgress />
-          :
-          <button className={classes.btn} onClick={exitERC20}
-            disabled={providerChainId === config.ETHEREUM_CHAINID ? false : true}>
-            Complete Withdraw
-          </button>
-        }
+
+        <button className={classes.btn} onClick={exitERC20}
+          disabled={providerChainId === config.ETHEREUM_CHAINID && !loading ? false : true}>
+          {loading && <CircularProgress size={24} style={{ margin: 'auto', marginRight: 15 }} />}
+          {loading ? 'checking...' : 'Complete Withdraw'}
+        </button>
         {hash &&
-          <Alert severity="success">This is a success alert — check it out!
+          <Alert severity="success">
             Exit transaction hash: <a target="_blank" href={`https://etherscan.io/tx/${hash}`} rel="noreferrer">{hash}</a>
           </Alert>
         }
@@ -141,8 +143,8 @@ const App = () => {
             {error}
           </Alert>
         }
-        {providerChainId !== config.ETHEREUM_CHAINID &&
-          <Alert severity="error">This is an error alert — check it out!
+        {providerChainId && providerChainId !== config.ETHEREUM_CHAINID &&
+          <Alert severity="error">
             Seems like you are not on Eth Network, change the network and refresh the page.
           </Alert>
         }
@@ -193,7 +195,6 @@ const useStyles = makeStyles((theme) => ({
     height: "44px",
     lineHeight: "44px",
     padding: "0 20px",
-    border: "1px solid #8247E5",
     borderRadius: "4px",
     display: "inline-flex",
     textTransform: "capitalize",
