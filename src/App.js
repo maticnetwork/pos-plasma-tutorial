@@ -12,13 +12,20 @@ const MaticPoSClient = require("@maticnetwork/maticjs").MaticPOSClient;
 
 const App = () => {
   const classes = useStyles();
-  const { account, providerChainId, inj_provider } = useWeb3Context();
+  const { account, providerChainId, inj_provider, connectWeb3 } = useWeb3Context();
 
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [maticProvider, setMaticProvider] = useState();
   const [hash, setHash] = useState('');
   const [error, setError] = useState('');
+  const [errLink, setErrLink] = useState(false);
+
+  useEffect(() => {
+    if (!account) {
+      connectWeb3();
+    }
+  }, [account, connectWeb3])
 
   useEffect(() => {
     const setProvider = async () => {
@@ -55,6 +62,7 @@ const App = () => {
   const exitERC20 = async () => {
     setError('');
     setHash('');
+    setErrLink(false);
     try {
       setLoading(true);
       const maticPoSClient = posClientParent();
@@ -78,10 +86,13 @@ const App = () => {
     } catch (e) {
       setLoading(false);
       if (e.message.substr(0, 28) === `Returned values aren't valid`)
-        setError('Seems like you are not on Eth Network, change the network and refresh the page.')
+        setError('Seems like you are not on Ethereum Network, change the network and refresh the page.')
 
       else if (e.message === `Cannot read property 'blockNumber' of null`)
         setError('Incorrect burn transaction hash')
+
+      else if (e.message === `txHash not provided`)
+        setError('Please input the transaction hash.')
 
       else if (e.message.substr(0, 32) === `Returned error: invalid argument`)
         setError('Incorrect burn transaction hash')
@@ -93,7 +104,7 @@ const App = () => {
         setError('Please refresh the page and try again.')
 
       else if (e.message === `Log not found in receipt`)
-        setError('Please reach out to support team here and mention this error in your ticket.')
+        setErrLink(true);
 
       else if (e.message === 'Invalid response')
         setError('Please try again after some time.');
@@ -112,11 +123,11 @@ const App = () => {
       {/* Top Intro section */}
       <div className={classes.inro}>
         <Typography variant="h1" className={classes.title}>
-          Polygon PoS Withdraw 
+          Polygon PoS Withdraw
         </Typography>
 
         <Typography variant="h1" className={classes.text}>
-          Paste the transaction hash of your burn transaction on Polygon and click on Complete Withdraw.<br/>
+          Paste the transaction hash of your burn transaction on Polygon and click on Complete Withdraw.<br />
           If you cannot find your burn transaction, please find it <a target="_blank" style={{ textDecoration: 'underline' }}
             href={`https://polygonscan.com/address/${account}#tokentxns`} rel="noreferrer">here</a>. Also, read the instructions given below carefully.
         </Typography>
@@ -131,18 +142,24 @@ const App = () => {
         </div>
 
         <button className={classes.btn} onClick={exitERC20}
-          disabled={providerChainId === config.ETHEREUM_CHAINID && !loading ? false : true}>
+          disabled={providerChainId === config.ETHEREUM_CHAINID && !loading && account ? false : true}>
           {loading && <CircularProgress size={24} style={{ margin: 'auto', marginRight: 15 }} />}
           {loading ? 'checking...' : 'Complete Withdraw'}
         </button>
         {hash &&
           <Alert severity="success">
-            Exit transaction hash: <a target="_blank" href={`https://etherscan.io/tx/${hash}`} rel="noreferrer">{hash}</a>
+            Exit transaction hash: <a target="blank" href={`https://etherscan.io/tx/${hash}`} rel="noreferrer">{hash}</a>
           </Alert>
         }
         {error &&
           <Alert severity="error">
             {error}
+          </Alert>
+        }
+        {errLink &&
+          <Alert severity="error">
+            Please reach out to <a target="blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
+              href="https://wallet-support.matic.network/portal/en/home" rel="noreferrer">support team</a> {' '}.
           </Alert>
         }
         {providerChainId && providerChainId !== config.ETHEREUM_CHAINID &&
@@ -163,7 +180,7 @@ const App = () => {
           Ethereum, then you can use this interface.
           <br />
           <br />
-          To find your burn hash go to {'→'} <a target="_blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
+          To find your burn transaction hash go to {'→'} <a target="_blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
             href={`https://polygonscan.com/address/${account}#tokentxns`} rel="noreferrer">this link</a>
           {' '} and look for the transaction with which you initiated the first step of withdraw process on Polygon chain.
         </Typography>
@@ -174,17 +191,18 @@ const App = () => {
           Instructions
         </Typography>
         <ul style={{ textAlign: 'left' }} className={classes.subTopic}>
+          <li><b>You can withdraw only PoS - ERC20 tokens using this interface. For all plasma tokens
+            including MATIC</b>, reach out to <a target="_blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
+              href={`https://wallet-support.matic.network/portal/en/home`} rel="noreferrer">Polygon support</a>.</li>
           <li>This application can be only used from MetaMask wallet and Wallet Connect.</li>
-          <li>You can withdraw all ERC20 tokens except MATIC using this interface. In the case of MATIC, reach out to <a target="_blank" style={{ color: '#0d6efd',textDecoration: 'underline' }}
-            href={`https://wallet-support.matic.network/portal/en/home`} rel="noreferrer">support</a>.</li>
           <li>Ensure that you are on Ethereum Network before going ahead with the steps below.</li>
 
           <li>In the input box, paste the transaction hash of the transaction you did on Polygon chain to initiate the withdraw.</li>
           <li>Click on Complete Withdraw and wait for the Transaction sigining interface to popup.</li>
-          <li>Confirm the transaction. Its reccomended not to lower the gas fees or the gas limit.</li>
-          <li>Once the transaction gets completed, you will see a link to the transaction details on Ethereum. Do not refresh the screen.</li>
-          <li>Thats it. Your tokens will be safely withdrawn to your account on Ethereum.</li>
-          <li>In case of any issues, please raise a ticket <a target="_blank" style={{ color: '#0d6efd',textDecoration: 'underline' }}
+          <li>Confirm the transaction. It is recommended not to lower the gas fees or the gas limit.</li>
+          <li>Once the transaction gets completed, you will see a link to the transaction details on Ethereum Network. Do not refresh the screen.</li>
+          <li>Thats it. Your tokens will be safely withdrawn to your account on Ethereum Network.</li>
+          <li>In case of any issues, please raise a ticket <a target="_blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
             href={`https://wallet-support.matic.network/portal/en/home`} rel="noreferrer">here</a>.</li>
         </ul>
       </section>
@@ -195,7 +213,7 @@ const App = () => {
 
 export default App;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   btn: {
     height: "44px",
     lineHeight: "44px",
@@ -209,7 +227,15 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "#061024",
     color: "white",
     cursor: 'pointer',
-    marginBottom: 20
+    marginBottom: 20,
+
+    "&:disabled": {
+      backgroundColor: "#bdc3c7",
+      borderColor: "#bdc3c7",
+      color: "white",
+      border: 'none',
+      cursor: 'default'
+    },
   },
   inro: {
     height: 200,

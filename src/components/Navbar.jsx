@@ -23,7 +23,7 @@ const Navbar = () => {
 
         <div style={{ display: 'flex', margin: 'auto' }}>
           <a href="https://wallet.matic.network/" target="blank"
-            className={classes.link}>Go to wallet</a>
+            className={classes.link}>Go to Polygon Wallet</a>
           <ConnectWallet />
         </div>
       </div>
