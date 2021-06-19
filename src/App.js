@@ -112,11 +112,13 @@ const App = () => {
       {/* Top Intro section */}
       <div className={classes.inro}>
         <Typography variant="h1" className={classes.title}>
-          Submit your transaction hash
+          Polygon PoS Withdraw 
         </Typography>
 
         <Typography variant="h1" className={classes.text}>
-          ➡    first step of your withdraw process on Polygon chain    ⬅
+          Paste the transaction hash of your burn transaction on Polygon and click on Complete Withdraw.<br/>
+          If you cannot find your burn transaction, please find it <a target="_blank" style={{ textDecoration: 'underline' }}
+            href={`https://polygonscan.com/address/${account}#tokentxns`} rel="noreferrer">here</a>. Also, read the instructions given below carefully.
         </Typography>
       </div>
 
@@ -156,7 +158,7 @@ const App = () => {
           What it does?
         </Typography>
         <Typography variant="h1" className={classes.subTopic}>
-          Using this application is a very simple interface that will allow you to complete your withdraw process which you started on Polygon Network.
+          You can use this interface to complete your withdraw process which you started on Polygon Network.
           In case you have initiated your withdraw on the Polygon chain and you are not able to complete the final step of withdraw on
           Ethereum, then you can use this interface.
           <br />
@@ -172,15 +174,18 @@ const App = () => {
           Instructions
         </Typography>
         <ul style={{ textAlign: 'left' }} className={classes.subTopic}>
-          <li>This application can be only used by MetaMask broswer extenstion.</li>
-          <li>This application can be used to withdraw all ERC20 tokens except MATIC.</li>
+          <li>This application can be only used from MetaMask wallet and Wallet Connect.</li>
+          <li>You can withdraw all ERC20 tokens except MATIC using this interface. In the case of MATIC, reach out to <a target="_blank" style={{ color: '#0d6efd',textDecoration: 'underline' }}
+            href={`https://wallet-support.matic.network/portal/en/home`} rel="noreferrer">support</a>.</li>
           <li>Ensure that you are on Ethereum Network before going ahead with the steps below.</li>
 
-          <li>Paste the transaction hash of that transaction in the input box.</li>
-          <li>Click on Complete Withdraw and wait for the Metamask to popup.</li>
+          <li>In the input box, paste the transaction hash of the transaction you did on Polygon chain to initiate the withdraw.</li>
+          <li>Click on Complete Withdraw and wait for the Transaction sigining interface to popup.</li>
           <li>Confirm the transaction. Its reccomended not to lower the gas fees or the gas limit.</li>
           <li>Once the transaction gets completed, you will see a link to the transaction details on Ethereum. Do not refresh the screen.</li>
           <li>Thats it. Your tokens will be safely withdrawn to your account on Ethereum.</li>
+          <li>In case of any issues, please raise a ticket <a target="_blank" style={{ color: '#0d6efd',textDecoration: 'underline' }}
+            href={`https://wallet-support.matic.network/portal/en/home`} rel="noreferrer">here</a>.</li>
         </ul>
       </section>
 
