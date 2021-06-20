@@ -63,6 +63,7 @@ app.post("/watch", async function (req, res) {
 });
 
 app.post("/update", async function (req, res) {
+  console.log(req);
   if (req.body.replaceHash !== undefined) {
     if (await collection.countDocuments({ hash: req.body.hash }) == 0) { // check if new hash is in db before creating
       const newDocument = {
@@ -85,7 +86,7 @@ app.post("/update", async function (req, res) {
       { $set: {status: req.body.status, lastCall: req.body, timestamp: Date.now() } }
     ); // update all other kind of txs
   }
-  res.send(result);
+  res.sendStatus(200);
 });
 
 app.listen(process.env.PORT || 8080, () => {
