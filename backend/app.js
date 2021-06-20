@@ -3,7 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const Web3 = require("web3");
-const { MongoClient, ObjectId } = require("mongodb");
+const morgan = require("morgan");
+const { MongoClient } = require("mongodb");
 
 var web3 = new Web3(process.env.RPC_URL);
 
@@ -34,6 +35,7 @@ run();
 var app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(morgan("tiny"));
 
 app.get("/", async function (req, res) {
   res.send("Blocknative POC API");
@@ -68,13 +70,15 @@ app.post("/update", async function (req, res) {
       lastCall: req.body,
       timestamp: Date.now(),
     };
-    var result = collection.insertOne(newDocument);
-    var result = collection.updateOne(
+    var result = await collection.insertOne(newDocument);
+    console.log(result);
+    var result = await collection.updateOne(
       { hash: req.body.replaceHash },
       { $set: { status: req.body.status, lastCall: req.body, timestamp: Date.now(), newHash: req.body.hash } }
     );
+    console.log(result);
   } else {
-    var result = collection.updateOne(
+    var result = await collection.updateOne(
       { hash: req.body.hash },
       { $set: {status: req.body.status, lastCall: req.body, timestamp: Date.now() } }
     );
