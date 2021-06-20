@@ -63,23 +63,18 @@ app.post("/watch", async function (req, res) {
 });
 
 app.post("/update", async function (req, res) {
-  console.log(req);
   if (req.body.replaceHash !== undefined) {
-    if (await collection.countDocuments({ hash: req.body.hash }) == 0) { // check if new hash is in db before creating
-      const newDocument = {
-        hash: req.body.hash,
-        status: req.body.status,
-        lastCall: req.body,
-        timestamp: Date.now(),
-      };
-      var result = await collection.insertOne(newDocument);
-      console.log(result);
-    }
+    const newDocument = {
+      hash: req.body.replaceHash,
+      status: req.body.status,
+      lastCall: req.body,
+      timestamp: Date.now(),
+    };
+    var result = await collection.insertOne(newDocument); // add the new tx to db
     var result = await collection.updateOne(
-      { hash: req.body.replaceHash },
+      { hash: req.body.hash },
       { $set: { status: req.body.status, lastCall: req.body, timestamp: Date.now(), newHash: req.body.hash } }
     ); // update old tx status (speedup/cancels)
-    console.log(result);
   } else {
     var result = await collection.updateOne(
       { hash: req.body.hash },
