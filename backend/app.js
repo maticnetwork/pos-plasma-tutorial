@@ -35,7 +35,7 @@ run();
 var app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(morgan("tiny"));
+app.use(morgan("dev"));
 
 app.get("/", async function (req, res) {
   res.send("Blocknative POC API");
