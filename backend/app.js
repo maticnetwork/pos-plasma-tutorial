@@ -33,37 +33,53 @@ run();
 
 var app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(cors({credentials: true, origin: ["https://watchgod.matic.today", "http://localhost:3000", "http://localhost"]}));
+app.use(express.urlencoded({ extended: false }));
 
 app.get("/", async function (req, res) {
   res.send("Blocknative POC API");
 });
 
 app.post("/watch", async function (req, res) {
-  if (!/^0x([A-Fa-f0-9]{64})$/.test(req.hash)) {
+  if (!/^0x([A-Fa-f0-9]{64})$/.test(req.body.hash)) {
     res.sendStatus(400);
     return;
   }
-  axios.post("https://api.blocknative.com/transaction", {
+  const response = await axios.post("https://api.blocknative.com/transaction", {
     "apiKey": process.env.API_KEY,
-    "hash": req.hash,
+    "hash": req.body.hash,
     "blockchain": "ethereum",
     "network": "goerli"
   });
   const newDocument = {
-    hash: req.hash,
+    hash: req.body.hash,
     status: "watched",
     lastCall: null,
     timestamp: Date.now(),
   };
   const result = await collection.insertOne(newDocument);
-  res.send(result.data);
+  res.send(result);
 });
 
-app.get("/update", async function (req, res) {
-  res.sendStatus(200);
+app.post("/update", async function (req, res) {
+  if (req.body.replaceHash !== undefined) {
+    const newDocument = {
+      hash: req.body.hash,
+      status: req.body.status,
+      lastCall: req.body,
+      timestamp: Date.now(),
+    };
+    var result = collection.insertOne(newDocument);
+    var result = collection.updateOne(
+      { hash: req.body.replaceHash },
+      { $set: { status: req.body.status, lastCall: req.body, timestamp: Date.now(), newHash: req.body.hash } }
+    );
+  } else {
+    var result = collection.updateOne(
+      { hash: req.body.hash },
+      { $set: {status: req.body.status, lastCall: req.body, timestamp: Date.now() } }
+    );
+  }
+  res.send(result);
 });
 
 app.listen(process.env.PORT || 8080, () => {
