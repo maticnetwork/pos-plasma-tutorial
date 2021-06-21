@@ -5,6 +5,7 @@ const axios = require("axios");
 const Web3 = require("web3");
 const morgan = require("morgan");
 const { MongoClient } = require("mongodb");
+const Transaction = require("./schema.js");
 
 var web3 = new Web3(process.env.RPC_URL);
 
@@ -23,7 +24,7 @@ async function run() {
     console.log("Starting DB connection...");
     await client.connect();
     const db = await client.db("bntestdb");
-    collection = db.collection("bntestdb");
+    collection = db.collection("transactions");
     console.log("DB ready!");
   } catch (e) {
     console.log(e);
@@ -52,13 +53,7 @@ app.post("/watch", async function (req, res) {
       "blockchain": "ethereum",
       "network": "goerli"
     });
-    const newDocument = {
-      hash: req.body.hash,
-      status: "watched",
-      lastCall: null,
-      timestamp: Date.now(),
-    };
-    const result = await collection.insertOne(newDocument);
+    const result = await collection.insertOne(new Transaction({ hash: req.body.hash }));
     res.sendStatus(200);
   } catch(e) {
     console.error("error:", e);
@@ -69,13 +64,12 @@ app.post("/watch", async function (req, res) {
 app.post("/update", async function (req, res) {
   try {
     if (req.body.replaceHash !== undefined) {
-      const newDocument = {
+      const newDocument = new Transaction({
         hash: req.body.replaceHash,
         status: req.body.status,
         lastCall: req.body,
-        timestamp: Date.now(),
         oldHash: req.body.hash,
-      };
+      });
       var result = await collection.insertOne(newDocument); // add the new tx to db
       var result = await collection.updateOne(
         { hash: req.body.hash },
