@@ -74,6 +74,7 @@ app.post("/update", async function (req, res) {
         status: req.body.status,
         lastCall: req.body,
         timestamp: Date.now(),
+        oldHash: req.body.hash,
       };
       var result = await collection.insertOne(newDocument); // add the new tx to db
       var result = await collection.updateOne(
