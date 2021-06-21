@@ -84,6 +84,18 @@ app.post("/update", async function (req, res) {
   res.sendStatus(200);
 });
 
+app.get("/status", async function (req, res) {
+  if (!/^0x([A-Fa-f0-9]{64})$/.test(req.query.hash)) {
+    res.sendStatus(400);
+    return;
+  }
+  var result = await collection.findOne({ hash: req.query.hash }, { projection: { _id: 0, "lastCall.apiKey": 0 } });
+  if (result === null) {
+    result = {};
+  }
+  res.send(result).json();
+});
+
 app.listen(process.env.PORT || 8080, () => {
   console.log("Server starting on port 8080...")
 });
