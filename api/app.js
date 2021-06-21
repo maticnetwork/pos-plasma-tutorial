@@ -42,58 +42,71 @@ app.get("/", async function (req, res) {
 });
 
 app.post("/watch", async function (req, res) {
-  if (!/^0x([A-Fa-f0-9]{64})$/.test(req.body.hash)) {
+  try {
+    if (!/^0x([A-Fa-f0-9]{64})$/.test(req.body.hash)) {
+      throw "Invalid hash sent";
+    }
+    const response = await axios.post("https://api.blocknative.com/transaction", {
+      "apiKey": process.env.API_KEY,
+      "hash": req.body.hash,
+      "blockchain": "ethereum",
+      "network": "goerli"
+    });
+    const newDocument = {
+      hash: req.body.hash,
+      status: "watched",
+      lastCall: null,
+      timestamp: Date.now(),
+    };
+    const result = await collection.insertOne(newDocument);
+    res.sendStatus(200);
+  } catch(e) {
+    console.error("error:", e);
     res.sendStatus(400);
-    return;
   }
-  const response = await axios.post("https://api.blocknative.com/transaction", {
-    "apiKey": process.env.API_KEY,
-    "hash": req.body.hash,
-    "blockchain": "ethereum",
-    "network": "goerli"
-  });
-  const newDocument = {
-    hash: req.body.hash,
-    status: "watched",
-    lastCall: null,
-    timestamp: Date.now(),
-  };
-  const result = await collection.insertOne(newDocument);
-  res.send(result);
 });
 
 app.post("/update", async function (req, res) {
-  if (req.body.replaceHash !== undefined) {
-    const newDocument = {
-      hash: req.body.replaceHash,
-      status: req.body.status,
-      lastCall: req.body,
-      timestamp: Date.now(),
-    };
-    var result = await collection.insertOne(newDocument); // add the new tx to db
-    var result = await collection.updateOne(
-      { hash: req.body.hash },
-      { $set: { status: req.body.status, lastCall: req.body, timestamp: Date.now(), newHash: req.body.replaceHash } }
-    ); // update old tx status (speedup/cancels)
-  } else {
-    var result = await collection.updateOne(
-      { hash: req.body.hash },
-      { $set: {status: req.body.status, lastCall: req.body, timestamp: Date.now() } }
-    ); // update all other kind of txs
+  try {
+    if (req.body.replaceHash !== undefined) {
+      const newDocument = {
+        hash: req.body.replaceHash,
+        status: req.body.status,
+        lastCall: req.body,
+        timestamp: Date.now(),
+      };
+      var result = await collection.insertOne(newDocument); // add the new tx to db
+      var result = await collection.updateOne(
+        { hash: req.body.hash },
+        { $set: { status: req.body.status, lastCall: req.body, timestamp: Date.now(), newHash: req.body.replaceHash } }
+      ); // update old tx status (speedup/cancels)
+    } else {
+      var result = await collection.updateOne(
+        { hash: req.body.hash },
+        { $set: {status: req.body.status, lastCall: req.body, timestamp: Date.now() } }
+      ); // update all other kind of txs
+    }
+    res.sendStatus(200);
+  } catch(e) {
+    console.error("error:", e);
+    res.sendStatus(400);
   }
-  res.sendStatus(200);
 });
 
 app.get("/status", async function (req, res) {
-  if (!/^0x([A-Fa-f0-9]{64})$/.test(req.query.hash)) {
+  try {
+    if (!/^0x([A-Fa-f0-9]{64})$/.test(req.query.hash)) {
+      throw "Invalid hash sent";
+    }
+    var result = await collection.findOne({ hash: req.query.hash }, { projection: { _id: 0, "lastCall.apiKey": 0 } });
+    if (result === null) {
+      result = {};
+    }
+    res.send(result).json();
+  } catch(e) {
+    console.error("error:", e);
     res.sendStatus(400);
-    return;
   }
-  var result = await collection.findOne({ hash: req.query.hash }, { projection: { _id: 0, "lastCall.apiKey": 0 } });
-  if (result === null) {
-    result = {};
-  }
-  res.send(result).json();
 });
 
 app.listen(process.env.PORT || 8080, () => {
