@@ -1933,6 +1933,11 @@
     query-string "6.8.1"
     web3 "^1.3.0"
 
+"@maticnetwork/meta@2.4.16":
+  version "2.4.16"
+  resolved "https://registry.yarnpkg.com/@maticnetwork/meta/-/meta-2.4.16.tgz#7087317577a5171b71b85cfe77092be78e845e1c"
+  integrity sha512-N8dgOEtetBWP0Cn33F7F9ZqL+bDwK6LHWPTHlVHR1X3CrrroC/I0jMkDWQdxmTuAkkyCFI34g4qdqh5QrbNnwA==
+
 "@maticnetwork/meta@^2.4.13":
   version "2.4.13"
   resolved "https://registry.yarnpkg.com/@maticnetwork/meta/-/meta-2.4.13.tgz#1a01f239ed08a56b1bfe5f49d4b609cb9b082d17"

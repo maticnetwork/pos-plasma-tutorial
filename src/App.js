@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
-
-import Navbar from "./components/Navbar";
-import Instructions from "./components/Instructions";
-
 import Alert from '@material-ui/lab/Alert';
 import { CircularProgress, Typography, Switch } from "@material-ui/core";
 
-import { useWeb3Context } from './contexts/Web3Context';
-import config from "./utils/config.json";
-
+import Web3 from "web3";
+import MetaNetwork from "@maticnetwork/meta/network";
 import WalletConnectProvider from "@maticnetwork/walletconnect-provider";
+
+import Navbar from "./components/Navbar";
+import Instructions from "./components/Instructions";
+import config from "./utils/config.json";
+import { useWeb3Context } from './contexts/Web3Context';
 import { posClientParent, getMaticPlasmaParent } from "./utils/Matic";
+
 
 const App = () => {
   const classes = useStyles();
@@ -19,7 +21,7 @@ const App = () => {
 
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [isPlasma, setIsPlasma] = useState(true);
+  const [isPlasma, setIsPlasma] = useState(false);
   const [maticProvider, setMaticProvider] = useState();
   const [hash, setHash] = useState('');
   const [error, setError] = useState('');
@@ -48,6 +50,24 @@ const App = () => {
     setProvider();
   }, [])
 
+  const getProof = async (type) => {
+    try {
+      const base_url = 'https://apis.matic.network/api/v1/matic/exit-payload';
+      const posSignature = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+      const plasmaSignature = '0xebff2602b3f468259e1e99f613fed6691f3a6526effe6ef3e768ba7ae7a36c4f';
+      const url = `${base_url}/${inputValue}?eventSignature=${type === 'pos' ? posSignature : plasmaSignature}`
+      let { data } = await axios.get(url);
+      console.log(data);
+      if (data.result) {
+        return data.result;
+      }
+      return null;
+    } catch (error) {
+      console.error("Proof not found.");
+      return null;
+    }
+  }
+
 
   // POS ERC20 exit function
   const exitERC20 = async () => {
@@ -56,6 +76,8 @@ const App = () => {
     setErrLink(false);
     try {
       setLoading(true);
+      const proof = await getProof('pos');
+
       const maticPoSClient = await posClientParent(maticProvider, account, inj_provider);
       const isDone = await maticPoSClient.isERC20ExitProcessed(inputValue);
       console.log(isDone);
@@ -64,16 +86,33 @@ const App = () => {
         console.log("EXIT ALREADY PROCESSED");
         setError('Withdraw process completed already.');
         return;
-      }
-      await maticPoSClient
-        .exitERC20(inputValue, {
+      } else if (proof) {
+        const network = new MetaNetwork('mainnet', 'v1');
+        const parentProvider = inj_provider;
+        const parentWeb3 = new Web3(parentProvider)
+        const rootChainManagerAbi = network.abi('RootChainManager', 'pos',)
+        const rootChainManagerAddress = network.Main.POSContracts.RootChainManagerProxy
+        const rootChainManagerContract = new parentWeb3.eth.Contract(
+          rootChainManagerAbi,
+          rootChainManagerAddress,
+        )
+        await rootChainManagerContract.methods.exit(proof).send({
           from: account,
-        })
-        .then((res) => {
+        }).then((res) => {
           console.log("Exit transaction hash: ", res);
           setHash(res.transactionHash);
           setLoading(false);
         });
+      }
+      else {
+        await maticPoSClient.exitERC20(inputValue, {
+          from: account,
+        }).then((res) => {
+          console.log("Exit transaction hash: ", res);
+          setHash(res.transactionHash);
+          setLoading(false);
+        });
+      }
     } catch (e) {
       setLoading(false);
       if (e.message.substr(0, 28) === `Returned values aren't valid`)
@@ -104,16 +143,44 @@ const App = () => {
     setErrLink(false);
     try {
       setLoading(true);
-      const maticPoSClient = await getMaticPlasmaParent(maticProvider, account, inj_provider);
-      await maticPoSClient
-        .withdraw(inputValue, {
+      const proof = await getProof('plasma');
+      if (proof) {
+        const network = new MetaNetwork('mainnet', 'v1');
+        const parentProvider = inj_provider;
+        const parentWeb3 = new Web3(parentProvider)
+        const erc20PredicateAbi = network.abi('ERC20PredicateBurnOnly')
+        const erc20PredicateAddress = network.Main.Contracts.ERC20Predicate
+        const erc20PredicateContract = new parentWeb3.eth.Contract(
+          erc20PredicateAbi,
+          erc20PredicateAddress,
+        )
+        await erc20PredicateContract.methods.startExitWithBurntTokens(proof).send({
           from: account,
-        })
-        .then((res) => {
+        }).then((res) => {
           console.log("Exit transaction hash: ", res);
           setHash(res.transactionHash);
           setLoading(false);
         });
+      } else {
+        const maticPlasmaClient = await getMaticPlasmaParent(maticProvider, account, inj_provider);
+        await maticPlasmaClient.withdraw(inputValue, {
+          from: account,
+          onTransactionHash: async () => {
+            // api call here
+            let res = await axios.post("https://airdrop-api.matic.network/plasma-withdraw-notification", {
+              "address": account,
+              "burnTransactionHash": inputValue,
+              "toSendInToken": 0,
+              "symbol": "PLASMA_WITHDRAW"
+            });
+            console.log(res.data);
+          }
+        }).then((res) => {
+          console.log("Exit transaction hash: ", res);
+          setHash(res.transactionHash);
+          setLoading(false);
+        });
+      }
     } catch (e) {
       setLoading(false);
       if (e.message.substr(0, 28) === `Returned values aren't valid`)
