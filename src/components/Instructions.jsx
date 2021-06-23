@@ -14,7 +14,7 @@ const Instructions = () => {
           What it does?
         </Typography>
         <Typography variant="h1" className={classes.subTopic}>
-          You can use this interface to complete your withdraw process which you started on Polygon Network.
+          You can use this interface to complete your withdraw process which you started on Polygon Wallet.
           In case you have initiated your withdraw on the Polygon chain and you are not able to complete the final step of withdraw on
           Ethereum, then you can use this interface.
           <br />

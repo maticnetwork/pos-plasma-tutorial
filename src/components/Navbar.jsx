@@ -18,7 +18,7 @@ const Navbar = () => {
           <NavLink to="/" style={{ display: "flex", margin: 'auto' }}>
             <img src="logo.svg" alt="logo" className={classes.logo} />
           </NavLink>
-          <h3 className={classes.headline}>PoS Bridge Withdraw</h3>
+          <h3 className={classes.headline}>Withdraw</h3>
         </div>
 
         <div style={{ display: 'flex', margin: 'auto' }}>

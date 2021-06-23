@@ -212,7 +212,7 @@ const App = () => {
       {/* Top Intro section */}
       <div className={classes.inro}>
         <Typography variant="h1" className={classes.title}>
-          Polygon PoS Withdraw
+          Polygon Withdraw
         </Typography>
 
         <Typography variant="h1" className={classes.text}>
@@ -264,7 +264,7 @@ const App = () => {
         }
         {providerChainId && providerChainId !== config.ETHEREUM_CHAINID &&
           <Alert severity="error">
-            Seems like you are not on Eth Network, change the network and refresh the page.
+            Seems like you are not on Ethereum network, change the network and refresh the page.
           </Alert>
         }
       </section>
