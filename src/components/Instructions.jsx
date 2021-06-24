@@ -30,15 +30,14 @@ const Instructions = () => {
           Instructions
         </Typography>
         <ul style={{ textAlign: 'left' }} className={classes.subTopic}>
-          <li><b>You can withdraw only PoS - ERC20 tokens using this interface. For all plasma tokens
-            including MATIC</b>, reach out to <a target="_blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
-              href={`https://wallet-support.matic.network/portal/en/home`} rel="noreferrer">Polygon support</a>.</li>
+          <li>You can complete the withdraw process for all ERC20 tokens using this interface.</li>
+          <li><b>In the case of Plasma tokens, once you complete the transaction, the 7 day challenge period will begin and you can complete the Final Withdraw step from the Polygon Wallet</b>.</li>
           <li>This application can be only used from MetaMask wallet and Wallet Connect.</li>
           <li>Ensure that you are on Ethereum Network before going ahead with the steps below.</li>
 
           <li>In the input box, paste the transaction hash of the transaction you did on Polygon chain to initiate the withdraw.</li>
           <li>Click on Complete Withdraw and wait for the Transaction sigining interface to popup.</li>
-          <li>Confirm the transaction. It is recommended not to lower the gas fees or the gas limit.</li>
+          <li>Now, confirm the transaction. It is recommended not to lower the gas fees or the gas limit.</li>
           <li>Once the transaction gets completed, you will see a link to the transaction details on Ethereum Network. Do not refresh the screen.</li>
           <li>Thats it. Your tokens will be safely withdrawn to your account on Ethereum Network.</li>
           <li>In case of any issues, please raise a ticket <a target="_blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
