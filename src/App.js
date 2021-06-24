@@ -76,42 +76,45 @@ const App = () => {
     setErrLink(false);
     try {
       setLoading(true);
-      const proof = await getProof('pos');
-
-      const maticPoSClient = await posClientParent(maticProvider, account, inj_provider);
-      const isDone = await maticPoSClient.isERC20ExitProcessed(inputValue);
-      console.log(isDone);
-      if (isDone) {
+      // api call bridge api
+      const { data } = await axios.post('https://bridge-api-node.matic.today/api/v2/withdraw/', {
+        withdrawTxObjectArray: [{
+          "txHash": inputValue,
+          "isPoS": true
+        }],
+      });
+      // console.log(data);
+      const status = data.withdrawTxStatus[Object.keys(data.withdrawTxStatus)[0]];
+      if (status.code === -10) {
         setLoading(false);
         console.log("EXIT ALREADY PROCESSED");
         setError('Withdraw process completed already.');
-        return;
-      } else if (proof) {
-        const network = new MetaNetwork('mainnet', 'v1');
-        const parentProvider = inj_provider;
-        const parentWeb3 = new Web3(parentProvider)
-        const rootChainManagerAbi = network.abi('RootChainManager', 'pos',)
-        const rootChainManagerAddress = network.Main.POSContracts.RootChainManagerProxy
-        const rootChainManagerContract = new parentWeb3.eth.Contract(
-          rootChainManagerAbi,
-          rootChainManagerAddress,
-        )
-        await rootChainManagerContract.methods.exit(proof).send({
-          from: account,
-        }).then((res) => {
-          console.log("Exit transaction hash: ", res);
-          setHash(res.transactionHash);
-          setLoading(false);
-        });
-      }
-      else {
-        await maticPoSClient.exitERC20(inputValue, {
-          from: account,
-        }).then((res) => {
-          console.log("Exit transaction hash: ", res);
-          setHash(res.transactionHash);
-          setLoading(false);
-        });
+      } else {
+        const proof = await getProof('pos');
+        if (proof) {
+          const network = new MetaNetwork('mainnet', 'v1');
+          const parentProvider = inj_provider;
+          const parentWeb3 = new Web3(parentProvider)
+          const rootChainManagerAbi = network.abi('RootChainManager', 'pos',)
+          const rootChainManagerAddress = network.Main.POSContracts.RootChainManagerProxy
+          const rootChainManagerContract = new parentWeb3.eth.Contract(rootChainManagerAbi, rootChainManagerAddress)
+          await rootChainManagerContract.methods.exit(proof).send({
+            from: account,
+          }).then((res) => {
+            console.log("Exit transaction hash: ", res);
+            setHash(res.transactionHash);
+            setLoading(false);
+          });
+        } else {
+          const maticPoSClient = posClientParent(maticProvider, account, inj_provider);
+          await maticPoSClient.exitERC20(inputValue, {
+            from: account,
+          }).then((res) => {
+            console.log("Exit transaction hash: ", res);
+            setHash(res.transactionHash);
+            setLoading(false);
+          });
+        }
       }
     } catch (e) {
       setLoading(false);
@@ -143,43 +146,64 @@ const App = () => {
     setErrLink(false);
     try {
       setLoading(true);
-      const proof = await getProof('plasma');
-      if (proof) {
-        const network = new MetaNetwork('mainnet', 'v1');
-        const parentProvider = inj_provider;
-        const parentWeb3 = new Web3(parentProvider)
-        const erc20PredicateAbi = network.abi('ERC20PredicateBurnOnly')
-        const erc20PredicateAddress = network.Main.Contracts.ERC20Predicate
-        const erc20PredicateContract = new parentWeb3.eth.Contract(
-          erc20PredicateAbi,
-          erc20PredicateAddress,
-        )
-        await erc20PredicateContract.methods.startExitWithBurntTokens(proof).send({
-          from: account,
-        }).then((res) => {
-          console.log("Exit transaction hash: ", res);
-          setHash(res.transactionHash);
-          setLoading(false);
-        });
+      // check bridge api
+      const { data } = await axios.post('https://bridge-api-node.matic.today/api/v2/withdraw/', {
+        withdrawTxObjectArray: [{
+          "txHash": inputValue,
+          "isPoS": false
+        }],
+      });
+      // console.log(data);
+      const status = data.withdrawTxStatus[Object.keys(data.withdrawTxStatus)[0]];
+      if (status.code === -10) {
+        setLoading(false);
+        console.log("EXIT ALREADY PROCESSED");
+        setError('Withdraw process completed already.');
       } else {
-        const maticPlasmaClient = await getMaticPlasmaParent(maticProvider, account, inj_provider);
-        await maticPlasmaClient.withdraw(inputValue, {
-          from: account,
-          onTransactionHash: async () => {
-            // api call here
-            let res = await axios.post("https://airdrop-api.matic.network/plasma-withdraw-notification", {
-              "address": account,
-              "burnTransactionHash": inputValue,
-              "toSendInToken": 0,
-              "symbol": "PLASMA_WITHDRAW"
+        const proof = await getProof('plasma');
+        if (proof) {
+          const network = new MetaNetwork('mainnet', 'v1');
+          const parentProvider = inj_provider;
+          const parentWeb3 = new Web3(parentProvider)
+          const erc20PredicateAbi = network.abi('ERC20PredicateBurnOnly')
+          const erc20PredicateAddress = network.Main.Contracts.ERC20Predicate
+          const erc20PredicateContract = new parentWeb3.eth.Contract(erc20PredicateAbi, erc20PredicateAddress)
+          await erc20PredicateContract.methods.startExitWithBurntTokens(proof).send({
+            from: account,
+          })
+            .on('transactionHash', async () => {
+              let res = await axios.post("https://airdrop-api.matic.network/plasma-withdraw-notification", {
+                "address": account,
+                "burnTransactionHash": inputValue,
+                "toSendInToken": 0,
+                "symbol": "PLASMA_WITHDRAW"
+              });
+              console.log(res.data);
+            })
+            .then((res) => {
+              console.log("Exit transaction hash: ", res);
+              setHash(res.transactionHash);
+              setLoading(false);
             });
-            console.log(res.data);
-          }
-        }).then((res) => {
-          console.log("Exit transaction hash: ", res);
-          setHash(res.transactionHash);
-          setLoading(false);
-        });
+        } else {
+          const maticPlasmaClient = await getMaticPlasmaParent(maticProvider, account, inj_provider);
+          await maticPlasmaClient.withdraw(inputValue, {
+            from: account,
+            onTransactionHash: async () => {
+              let res = await axios.post("https://airdrop-api.matic.network/plasma-withdraw-notification", {
+                "address": account,
+                "burnTransactionHash": inputValue,
+                "toSendInToken": 0,
+                "symbol": "PLASMA_WITHDRAW"
+              });
+              console.log(res.data);
+            }
+          }).then((res) => {
+            console.log("Exit transaction hash: ", res);
+            setHash(res.transactionHash);
+            setLoading(false);
+          });
+        }
       }
     } catch (e) {
       setLoading(false);
