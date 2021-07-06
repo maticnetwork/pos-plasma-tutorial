@@ -48,10 +48,7 @@ const useStyles = makeStyles((theme) => ({
   logo: {
     height: "30px",
     margin: 'auto',
-    marginRight: 20,
-    "@media (max-width:599px)": {
-      display: 'none',
-    },
+    marginRight: 20
   },
   headline: {
     fontWeight: 400,
@@ -62,7 +59,10 @@ const useStyles = makeStyles((theme) => ({
     margin: 'auto',
     marginRight: 15,
     color: '#3828E0',
-    fontSize: 16
+    fontSize: 16,
+    "@media (max-width:599px)": {
+      display: 'none',
+    },
   }
 }));
 

@@ -58,7 +58,11 @@ const useStyles = makeStyles(() => ({
     background: '#EFE7FD',
     border: '1px solid #E0CFFC',
     boxSizing: 'border-box',
-    borderRadius: 8
+    borderRadius: 8,
+    "@media (max-width:599px)": {
+      padding: 20,
+      margin: 10
+    },
   },
   topic: {
     fontSize: 18,

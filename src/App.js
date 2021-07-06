@@ -26,6 +26,7 @@ const App = () => {
   const [hash, setHash] = useState('');
   const [error, setError] = useState('');
   const [errLink, setErrLink] = useState(false);
+  const [posErrLink, setPosErrLink] = useState(false);
 
   useEffect(() => {
     if (!account) {
@@ -73,7 +74,7 @@ const App = () => {
   const exitERC20 = async () => {
     setError('');
     setHash('');
-    setErrLink(false);
+    setPosErrLink(false);
     try {
       setLoading(true);
       // api call bridge api
@@ -131,7 +132,7 @@ const App = () => {
       else if (e.message.substr(0, 53) === `Invalid parameters: must provide an Ethereum address.`)
         setError('Please refresh the page and try again.')
       else if (e.message === `Log not found in receipt`)
-        setErrLink(true);
+        setPosErrLink(true);
       else if (e.message === 'Invalid response')
         setError('Please try again after some time.');
       else setError(e.message.substr(0, 80));
@@ -280,6 +281,13 @@ const App = () => {
             {error}
           </Alert>
         }
+        {posErrLink &&
+          <Alert severity="error" style={{ textAlign: 'left' }}>
+            If you are trying to withdraw MATIC then switch to Plasma using the toggle. <br />
+            If Still facing problem then please reach out to <a target="blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
+              href="https://wallet-support.matic.network/portal/en/home" rel="noreferrer">support team</a> {' '}.
+          </Alert>
+        }
         {errLink &&
           <Alert severity="error">
             Please reach out to <a target="blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
@@ -353,7 +361,10 @@ const useStyles = makeStyles(() => ({
     position: 'relative',
     textAlign: 'center',
     maxWidth: 852,
-    margin: 'auto'
+    margin: 'auto',
+    "@media (max-width:599px)": {
+      padding: '0 10px',
+    },
   },
   input: {
     maxWidth: 500,
@@ -379,26 +390,6 @@ const useStyles = makeStyles(() => ({
       padding: 0,
       width: '100%',
     },
-  },
-  instructions: {
-    maxWidth: 852,
-    margin: '30px auto',
-    padding: 32,
-    background: '#EFE7FD',
-    border: '1px solid #E0CFFC',
-    boxSizing: 'border-box',
-    borderRadius: 8
-  },
-  topic: {
-    fontSize: 18,
-    color: '#601FCD',
-    fontWeight: 800,
-    marginBottom: 16
-  },
-  subTopic: {
-    fontSize: 16,
-    color: '#061024',
-    fontWeight: 400
   }
 }));
 
