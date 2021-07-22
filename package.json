@@ -5,7 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.58",
-    "@maticnetwork/maticjs": "^2.0.40",
+    "@maticnetwork/maticjs": "^2.0.45",
     "@maticnetwork/meta": "2.4.16",
     "@maticnetwork/walletconnect-provider": "^0.0.1-beta.1",
     "@walletconnect/web3-provider": "^1.4.1",
