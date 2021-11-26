@@ -6,7 +6,7 @@
   "plasmaWETH": "0x4DfAe612aaCB5b448C12A591cD0879bFa2e51d62",
   "plasmaRootERC20": "0x3f152B63Ec5CA5831061B2DccFb29a874C317502",
   "plasmaChildERC20": "0x2d7882beDcbfDDce29Ba99965dd3cdF7fcB10A1e",
-  "MATIC_RPC": "https://polygon-rpc.com/25b3fe63-3915-4dcb-ae9c-093aa64b93ab",
+  "MATIC_RPC": "https://polygon-mainnet.g.alchemy.com/v2/EUxHCtR5QnoB1jHOHeUhQ0sAovuXkG8r",
   "ETHEREUM_RPC": "https://mainnet.infura.io/v3/fce7ed09230548eea542d77c55357baf",
   "VERSION": "v1",
   "NETWORK": "mainnet",
