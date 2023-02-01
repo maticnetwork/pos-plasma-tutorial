@@ -41,7 +41,7 @@ const Instructions = () => {
           <li>Once the transaction gets completed, you will see a link to the transaction details on Ethereum Network. Do not refresh the screen.</li>
           <li>Thats it. Your tokens will be safely withdrawn to your account on Ethereum Network.</li>
           <li>In case of any issues, please raise a ticket <a target="_blank" style={{ color: '#0d6efd', textDecoration: 'underline' }}
-            href={`https://wallet-support.matic.network/portal/en/home`} rel="noreferrer">here</a>.</li>
+            href={`https://support.polygon.technology/support/home`} rel="noreferrer">here</a>.</li>
         </ul>
       </section>
     </React.Fragment>
