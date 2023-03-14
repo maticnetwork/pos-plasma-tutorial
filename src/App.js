@@ -53,7 +53,7 @@ const App = () => {
 
   const getProof = async (type) => {
     try {
-      const base_url = 'https://apis.matic.network/api/v1/matic/exit-payload';
+      const base_url = 'https://proof-generator.polygon.technology/api/v1/matic/exit-payload';
       const posSignature = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
       const plasmaSignature = '0xebff2602b3f468259e1e99f613fed6691f3a6526effe6ef3e768ba7ae7a36c4f';
       const url = `${base_url}/${inputValue}?eventSignature=${type === 'pos' ? posSignature : plasmaSignature}`
